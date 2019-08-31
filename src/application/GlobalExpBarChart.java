@@ -15,7 +15,7 @@ import javafx.scene.control.Tooltip;
 public class GlobalExpBarChart {
 
 
-	public static BarChart createBarChart(String[] feature_names, double[] feature_importance, int n_clauses, boolean negated, String plot_name) throws ParseException {
+	public static BarChart createBarChart(String[] feature_names, double[] feature_importance, int n_clauses, boolean negated, String plot_name, String title) throws ParseException {
 	
 		int num_features = feature_names.length;
 		final CategoryAxis xAxis = new CategoryAxis();
@@ -29,7 +29,7 @@ public class GlobalExpBarChart {
 	    String titleBad = plot_name + " Negated Feature Strength";
 	    
 		final BarChart<String,Number> bc =  new BarChart<String,Number>(xAxis,yAxis);
-	    bc.setTitle("Global Interpretability");
+	    bc.setTitle(title);
 	    bc.setAnimated(false);
 	    bc.setLegendVisible(false);
 	    
@@ -51,11 +51,22 @@ public class GlobalExpBarChart {
 	        XYChart.Series pin = new XYChart.Series();
 	        //pin.setName("Global Feature Strength"); 
 	        
+	        double sum = 0;
+	        if(title.equalsIgnoreCase("Local Interpretability")) {
+	        	for(int i = 0; i < num_features; i++) {
+		        	sum += feature_importance[i];
+		        }
+		        if(sum == 0) sum = 1;
+	        }
+	        else sum = 1;
+	        
+	        
+	        
+	        
 	        
 	        for(int i = 0; i < num_features; i++) {
 	        	
-	        	pin.getData().add(new XYChart.Data(feature_names[i], feature_importance[i]));
-	        	//System.out.println(feature_names[i] + " " + feature_importance[i]);
+	        	pin.getData().add(new XYChart.Data(feature_names[i], feature_importance[i]/sum));
 	        }      
 	        bc.getData().addAll(pin);
 	        

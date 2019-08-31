@@ -44,6 +44,7 @@ public class AutomatonMachineController {
 
 	private AutomatonLearningMachine myAutomaton;
 	private GlobalExplainabilityController globalExpController;
+	private LocalExplainabilityController localExpController;
 	private DataInterfaceController dataInputController;
 	
 	private ReferenceMetrics metrics;
@@ -58,6 +59,10 @@ public class AutomatonMachineController {
 	private Stage primaryStage; 
 	private Stage globalExpWindow = new Stage();
 	private Scene globalExpScene;
+	
+	private Stage localExpWindow = new Stage();
+	private Scene localExpScene;
+	
 	private Stage dataInputWindow = new Stage();
 	private Scene dataInputScene;
 	
@@ -225,17 +230,28 @@ public class AutomatonMachineController {
                     dataInputController.getData(), 
                     (float)threshold_multiplier, 
                     (float)number_clause_multiplier, 
-                    (float)number_states_multiplier);
-			
+                    (float)number_states_multiplier, 
+                    (float)learn_rate);
+						
 			n_samples = dataInputController.getData().getN_samples();
-			
+		
 			globalExpController.setFeatureNameComboBox(dataInputController.getFeatureNames());
 			globalExpController.setClassNameComboBox(new String[] {"Class 1", "Class 2"});
 			globalExpController.setNClauses(myAutomaton.getNClauses());
 			globalExpController.setAutomaton(this);
 			
+			localExpController.setFeatureNameComboBox(dataInputController.getFeatureNames());
+			localExpController.setAutomaton(this);
+			
 			diagnosticName = new String[] {"TypeIError", "TypeIIError", "Sensitivity", "Specificity", "Accuracy", "ErrorRate", "F1", "F2", "MCC"};
 			performanceRecord = new ArrayList<double[]>();
+			
+			newSampleButton.setDisable(false);
+			beginTestButton.setDisable(false);
+			stopButton.setDisable(false);
+			beginTrainingButton.setDisable(false);
+			continuousLearning.setDisable(false);
+			
 			
 			System.out.println("Automaton Initiated");
 		}
@@ -287,7 +303,7 @@ public class AutomatonMachineController {
 					int rand_samp = training_sample_list.get(rng.nextInt(training_samples));		
 					int prediction = myAutomaton.update(myAutomaton.getTransformedData()[rand_samp], myAutomaton.getTargets()[rand_samp]);
 					
-					myAutomaton.printGlobalFeatureImportance(globalExpController.getClassChoice());
+					myAutomaton.computeGlobalFeatureImportance(globalExpController.getClassChoice());
 					
 					globalExpController.setPositive_features(myAutomaton.getPositiveFeatures());
 					globalExpController.setNegative_features(myAutomaton.getNegativeFeatures());
@@ -330,10 +346,9 @@ public class AutomatonMachineController {
 			
 			int rand_samp = training_sample_list.get(rng.nextInt(training_samples));		
 			int prediction = myAutomaton.update(myAutomaton.getTransformedData()[rand_samp], myAutomaton.getTargets()[rand_samp]);
+
 			
-			//System.out.println("Prediction: " + rand_samp + " " + prediction + " " + myAutomaton.getTargets()[rand_samp]);
-			
-			myAutomaton.printGlobalFeatureImportance(globalExpController.getClassChoice());
+			myAutomaton.computeGlobalFeatureImportance(globalExpController.getClassChoice());
 			
 			globalExpController.setPositive_features(myAutomaton.getPositiveFeatures());
 			globalExpController.setNegative_features(myAutomaton.getNegativeFeatures());
@@ -344,21 +359,71 @@ public class AutomatonMachineController {
 			}
 			
 		}
-		else {
+		else { //making an out-of-sample prediction
+					
+			int rand_samp = training_sample_list.get(training_samples + rng.nextInt(test_samples));				
+			int pred_class = myAutomaton.computeLocalFeatureImportance(myAutomaton.getTransformedData()[rand_samp]);
 			
-			int rand_samp = training_sample_list.get(training_samples + rng.nextInt(test_samples));		
-			int[] prediction = myAutomaton.predict_interpret(myAutomaton.getTransformedData()[rand_samp]);
-			int pred_class = prediction[prediction.length - 1];					
+			localExpController.setPositive_features(myAutomaton.getLocPositiveFeatures());
+			localExpController.setNegative_features(myAutomaton.getLocNegativeFeatures());
+			
+			localExpController.setPrediction(pred_class);
+			localExpController.setTarget(myAutomaton.getTargets()[rand_samp]);
+			localExpController.sketchCanvas();
+			printSample(myAutomaton.getOriginalData().getSample(rand_samp), pred_class, myAutomaton.getTargets()[rand_samp]);
 		}
     	
     }
 
-    @FXML
+    private void printSample(float[] original, int pred, int targ) {
+		
+    	diagnosticTextFlow.getChildren().clear();
+		
+		//diagnosticTabArea.setText(sb.toString());
+		Text label = new Text("\n\n");
+		diagnosticTextFlow.getChildren().add(label);
+
+		String[] names = globalExpController.getFeature_names();
+		
+		for(int i = 0; i < names.length; i++) {
+			
+			label = new Text(names[i] + ": ");
+			label.setFill(Paint.valueOf(Color.AQUA.toString()));
+			label.setFont(Font.font ("Courier", 20));
+			diagnosticTextFlow.getChildren().add(label);
+			label = new Text(original[i] + "\n");
+			label.setFill(Paint.valueOf(Color.YELLOW.toString()));
+			label.setFont(Font.font ("Courier", 20));
+			diagnosticTextFlow.getChildren().add(label);
+			
+		}
+		
+		label = new Text("Prediction: ");
+		label.setFill(Paint.valueOf(Color.AQUA.toString()));
+		label.setFont(Font.font ("Courier", 20));
+		diagnosticTextFlow.getChildren().add(label);
+		label = new Text(pred+ "\n");
+		
+		if(pred != targ) {
+			label.setFill(Paint.valueOf(Color.RED.toString()));
+		}
+		else {
+			label.setFill(Paint.valueOf(Color.LIGHTGREEN.toString()));
+		}
+		label.setFont(Font.font ("Courier", 20));
+		diagnosticTextFlow.getChildren().add(label);
+		
+		
+	}
+
+
+	@FXML
     void handleNumClausesChange() {
 
     	number_clause_multiplier = numClausesSlider.getValue();
     	numClausesText.setText(decimalFormat.format(number_clause_multiplier));
-    	myAutomaton.setNumClauseMultiplier((float)number_clause_multiplier);   	    	
+    	
+    	if(myAutomaton != null) myAutomaton.setNumClauseMultiplier((float)number_clause_multiplier);   	    	
     }
 
     @FXML
@@ -366,7 +431,8 @@ public class AutomatonMachineController {
 
     	number_states_multiplier = numStatesSlider.getValue();
     	numStatesText.setText(decimalFormat.format(number_states_multiplier));
-    	myAutomaton.setNumStatesMultiplier((float)number_states_multiplier);   	    	
+    	
+    	if(myAutomaton != null) myAutomaton.setNumStatesMultiplier((float)number_states_multiplier);   	    	
     	
     }
 
@@ -375,7 +441,8 @@ public class AutomatonMachineController {
 
     	n_training_rounds = (int)traindingRoundsSlider.getValue();
     	traindingRoundsText.setText(""+n_training_rounds);
-    	myAutomaton.setN_rounds(n_training_rounds);
+    	
+    	if(myAutomaton != null) myAutomaton.setN_rounds(n_training_rounds);
     	
     }
 
@@ -396,9 +463,8 @@ public class AutomatonMachineController {
     	learn_rate = rateSlider.getValue();
     	rateSlideText.setText(decimalFormat.format(learn_rate));
     	
-    	if(myAutomaton != null) {
-    		myAutomaton.setLearningRate((float)learn_rate);
-    	}
+    	if(myAutomaton != null) myAutomaton.setLearningRate((float)learn_rate);
+    	
     	
     	
     }
@@ -408,7 +474,8 @@ public class AutomatonMachineController {
     	
     	threshold_multiplier = clauseThresholdSlider.getValue();
     	clauseThresholdText.setText(decimalFormat.format(threshold_multiplier));
-    	//myAutomaton.setThresholdMultiplier((float)threshold_multiplier); 
+    	
+    	if(myAutomaton != null) myAutomaton.setThresholdMultiplier((float)threshold_multiplier); 
     }
 
     @FXML
@@ -416,23 +483,26 @@ public class AutomatonMachineController {
 
     	split_ratio = traindingSplitSlider.getValue()/100f;;
     	traindingRoundsText1.setText(decimalFormat.format(split_ratio));
-    	//myAutomaton.setTrainSplitRatio((float)split_ratio);
+    	
+    	if(myAutomaton != null) myAutomaton.setTrainSplitRatio((float)split_ratio);
     }
 
     @FXML
     void handleTraining(ActionEvent event) throws Exception {
 
+
+    	
     	training_sample_list = new ArrayList<Integer>();
 		for(int i = 0; i < n_samples; i++) training_sample_list.add(i);
 		Collections.shuffle(training_sample_list);
 		
 		System.out.println("NSamples" + " " + split_ratio + " " + n_samples);
-		int training_samples = (int)(split_ratio*n_samples);		
+		training_samples = (int)(split_ratio*n_samples);		
+		test_samples = n_samples - training_samples;
 
 		globalExpController.setNClauses(myAutomaton.getNClauses());
-		globalExpController.setFeature_names(dataInputController.getFeatureNames());
-		
-		
+
+			
 		learnTask = new Task<Void>() {
 	    	
 
@@ -451,22 +521,22 @@ public class AutomatonMachineController {
 					
 					//System.out.println("Prediction: " + prediction + " " + myAutomaton.getTargets()[rand_samp]);
 					
-					myAutomaton.printGlobalFeatureImportance(globalExpController.getClassChoice());
+					myAutomaton.computeGlobalFeatureImportance(globalExpController.getClassChoice());
 					
 					globalExpController.setPositive_features(myAutomaton.getPositiveFeatures());
 					globalExpController.setNegative_features(myAutomaton.getNegativeFeatures());
 					
-					Platform.runLater(new Runnable() {
-					    @Override
-					    public void run() {
-					    	try {
-								globalExpController.sketchCanvas();
-							} catch (ParseException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-					    }
-					});
+//					Platform.runLater(new Runnable() {
+//					    @Override
+//					    public void run() {
+//					    	try {
+//								globalExpController.sketchCanvas();
+//							} catch (ParseException e) {
+//								// TODO Auto-generated catch block
+//								e.printStackTrace();
+//							}
+//					    }
+//					});
 
 					updateProgress(count, n_training_rounds*training_samples); 
 					count++;
@@ -563,83 +633,83 @@ public class AutomatonMachineController {
 			
 			Text label = new Text("TypeIError: ");
 			label.setFill(Paint.valueOf(Color.AQUA.toString()));
-			label.setFont(Font.font ("Verdana", 20));
+			label.setFont(Font.font ("Courier New", 20));
 			diagnosticTextFlow.getChildren().add(label);
 			label = new Text(metrics.getTypeI_error() + "\n");
 			label.setFill(Paint.valueOf(Color.YELLOW.toString()));
-			label.setFont(Font.font ("Verdana", 20));
+			label.setFont(Font.font ("Courier New", 20));
 			diagnosticTextFlow.getChildren().add(label);
 
 			label = new Text("TypeIIError: ");
 			label.setFill(Paint.valueOf(Color.AQUA.toString()));
-			label.setFont(Font.font ("Verdana", 20));
+			label.setFont(Font.font ("Courier New", 20));
 			diagnosticTextFlow.getChildren().add(label);
 			label = new Text(metrics.getTypeII_error() + "\n");
 			label.setFill(Paint.valueOf(Color.YELLOW.toString()));
-			label.setFont(Font.font ("Verdana", 20));
+			label.setFont(Font.font ("Courier New", 20));
 			diagnosticTextFlow.getChildren().add(label);
 			
 			label = new Text("Sensitivity: ");
 			label.setFill(Paint.valueOf(Color.AQUA.toString()));
-			label.setFont(Font.font ("Verdana", 20));
+			label.setFont(Font.font ("Courier New", 20));
 			diagnosticTextFlow.getChildren().add(label);
 			label = new Text(metrics.getSensitivity() + "\n");
 			label.setFill(Paint.valueOf(Color.YELLOW.toString()));
-			label.setFont(Font.font ("Verdana", 20));
+			label.setFont(Font.font ("Courier New", 20));
 			diagnosticTextFlow.getChildren().add(label);
 			
 			label = new Text("Specificity: ");
 			label.setFill(Paint.valueOf(Color.AQUA.toString()));
-			label.setFont(Font.font ("Verdana", 20));
+			label.setFont(Font.font ("Courier New", 20));
 			diagnosticTextFlow.getChildren().add(label);
 			label = new Text(metrics.getSpecificity() + "\n");
 			label.setFill(Paint.valueOf(Color.YELLOW.toString()));
-			label.setFont(Font.font ("Verdana", 20));
+			label.setFont(Font.font ("Courier New", 20));
 			diagnosticTextFlow.getChildren().add(label);
 			
 			label = new Text("Accuracy: ");
 			label.setFill(Paint.valueOf(Color.AQUA.toString()));
-			label.setFont(Font.font ("Verdana", 20));
+			label.setFont(Font.font ("Courier New", 20));
 			diagnosticTextFlow.getChildren().add(label);
 			label = new Text(metrics.getAccuracy() + "\n");
 			label.setFill(Paint.valueOf(Color.YELLOW.toString()));
-			label.setFont(Font.font ("Verdana", 20));
+			label.setFont(Font.font ("Courier New", 20));
 			diagnosticTextFlow.getChildren().add(label);
 			
 			label = new Text("ErrorRate: ");
 			label.setFill(Paint.valueOf(Color.AQUA.toString()));
-			label.setFont(Font.font ("Verdana", 20));
+			label.setFont(Font.font ("Courier New", 20));
 			diagnosticTextFlow.getChildren().add(label);
 			label = new Text(metrics.getError_rate() + "\n");
 			label.setFill(Paint.valueOf(Color.YELLOW.toString()));
-			label.setFont(Font.font ("Verdana", 20));
+			label.setFont(Font.font ("Courier New", 20));
 			diagnosticTextFlow.getChildren().add(label);
 			
 			label = new Text("F1: ");
 			label.setFill(Paint.valueOf(Color.AQUA.toString()));
-			label.setFont(Font.font ("Verdana", 20));
+			label.setFont(Font.font ("Courier New", 20));
 			diagnosticTextFlow.getChildren().add(label);
 			label = new Text(metrics.getF1_score() + "\n");
 			label.setFill(Paint.valueOf(Color.YELLOW.toString()));
-			label.setFont(Font.font ("Verdana", 20));
+			label.setFont(Font.font ("Courier New", 20));
 			diagnosticTextFlow.getChildren().add(label);
 			
 			label = new Text("F2: ");
 			label.setFill(Paint.valueOf(Color.AQUA.toString()));
-			label.setFont(Font.font ("Verdana", 20));
+			label.setFont(Font.font ("Courier New", 20));
 			diagnosticTextFlow.getChildren().add(label);
 			label = new Text(metrics.getF2_score() + "\n");
 			label.setFill(Paint.valueOf(Color.YELLOW.toString()));
-			label.setFont(Font.font ("Verdana", 20));
+			label.setFont(Font.font ("Courier New", 20));
 			diagnosticTextFlow.getChildren().add(label);
 			
 			label = new Text("MCC: ");
 			label.setFill(Paint.valueOf(Color.AQUA.toString()));
-			label.setFont(Font.font ("Verdana", 20));
+			label.setFont(Font.font ("Courier New", 20));
 			diagnosticTextFlow.getChildren().add(label);
 			label = new Text(metrics.getMCC() + "\n");
 			label.setFill(Paint.valueOf(Color.YELLOW.toString()));
-			label.setFont(Font.font ("Verdana", 20));
+			label.setFont(Font.font ("Courier New", 20));
 			diagnosticTextFlow.getChildren().add(label);
             
     	}
@@ -709,83 +779,83 @@ public class AutomatonMachineController {
 			
 			label = new Text("TypeIError: ");
 			label.setFill(Paint.valueOf(Color.AQUA.toString()));
-			label.setFont(Font.font ("Verdana", 20));
+			label.setFont(Font.font ("Courier New", 20));
 			diagnosticTextFlow.getChildren().add(label);
 			label = new Text(metrics.getTypeI_error() + "\n");
 			label.setFill(Paint.valueOf(Color.YELLOW.toString()));
-			label.setFont(Font.font ("Verdana", 20));
+			label.setFont(Font.font ("Courier New", 20));
 			diagnosticTextFlow.getChildren().add(label);
 
 			label = new Text("TypeIIError: ");
 			label.setFill(Paint.valueOf(Color.AQUA.toString()));
-			label.setFont(Font.font ("Verdana", 20));
+			label.setFont(Font.font ("Courier New", 20));
 			diagnosticTextFlow.getChildren().add(label);
 			label = new Text(metrics.getTypeII_error() + "\n");
 			label.setFill(Paint.valueOf(Color.YELLOW.toString()));
-			label.setFont(Font.font ("Verdana", 20));
+			label.setFont(Font.font ("Courier New", 20));
 			diagnosticTextFlow.getChildren().add(label);
 			
 			label = new Text("Sensitivity: ");
 			label.setFill(Paint.valueOf(Color.AQUA.toString()));
-			label.setFont(Font.font ("Verdana", 20));
+			label.setFont(Font.font ("Courier New", 20));
 			diagnosticTextFlow.getChildren().add(label);
 			label = new Text(metrics.getSensitivity() + "\n");
 			label.setFill(Paint.valueOf(Color.YELLOW.toString()));
-			label.setFont(Font.font ("Verdana", 20));
+			label.setFont(Font.font ("Courier New", 20));
 			diagnosticTextFlow.getChildren().add(label);
 			
 			label = new Text("Specificity: ");
 			label.setFill(Paint.valueOf(Color.AQUA.toString()));
-			label.setFont(Font.font ("Verdana", 20));
+			label.setFont(Font.font ("Courier New", 20));
 			diagnosticTextFlow.getChildren().add(label);
 			label = new Text(metrics.getSpecificity() + "\n");
 			label.setFill(Paint.valueOf(Color.YELLOW.toString()));
-			label.setFont(Font.font ("Verdana", 20));
+			label.setFont(Font.font ("Courier New", 20));
 			diagnosticTextFlow.getChildren().add(label);
 			
 			label = new Text("Accuracy: ");
 			label.setFill(Paint.valueOf(Color.AQUA.toString()));
-			label.setFont(Font.font ("Verdana", 20));
+			label.setFont(Font.font ("Courier New", 20));
 			diagnosticTextFlow.getChildren().add(label);
 			label = new Text(metrics.getAccuracy() + "\n");
 			label.setFill(Paint.valueOf(Color.YELLOW.toString()));
-			label.setFont(Font.font ("Verdana", 20));
+			label.setFont(Font.font ("Courier New", 20));
 			diagnosticTextFlow.getChildren().add(label);
 			
 			label = new Text("ErrorRate: ");
 			label.setFill(Paint.valueOf(Color.AQUA.toString()));
-			label.setFont(Font.font ("Verdana", 20));
+			label.setFont(Font.font ("Courier New", 20));
 			diagnosticTextFlow.getChildren().add(label);
 			label = new Text(metrics.getError_rate() + "\n");
 			label.setFill(Paint.valueOf(Color.YELLOW.toString()));
-			label.setFont(Font.font ("Verdana", 20));
+			label.setFont(Font.font ("Courier New", 20));
 			diagnosticTextFlow.getChildren().add(label);
 			
 			label = new Text("F1: ");
 			label.setFill(Paint.valueOf(Color.AQUA.toString()));
-			label.setFont(Font.font ("Verdana", 20));
+			label.setFont(Font.font ("Courier New", 20));
 			diagnosticTextFlow.getChildren().add(label);
 			label = new Text(metrics.getF1_score() + "\n");
 			label.setFill(Paint.valueOf(Color.YELLOW.toString()));
-			label.setFont(Font.font ("Verdana", 20));
+			label.setFont(Font.font ("Courier New", 20));
 			diagnosticTextFlow.getChildren().add(label);
 			
 			label = new Text("F2: ");
 			label.setFill(Paint.valueOf(Color.AQUA.toString()));
-			label.setFont(Font.font ("Verdana", 20));
+			label.setFont(Font.font ("Courier New", 20));
 			diagnosticTextFlow.getChildren().add(label);
 			label = new Text(metrics.getF2_score() + "\n");
 			label.setFill(Paint.valueOf(Color.YELLOW.toString()));
-			label.setFont(Font.font ("Verdana", 20));
+			label.setFont(Font.font ("Courier New", 20));
 			diagnosticTextFlow.getChildren().add(label);
 			
 			label = new Text("MCC: ");
 			label.setFill(Paint.valueOf(Color.AQUA.toString()));
-			label.setFont(Font.font ("Verdana", 20));
+			label.setFont(Font.font ("Courier New", 20));
 			diagnosticTextFlow.getChildren().add(label);
 			label = new Text(metrics.getMCC() + "\n");
 			label.setFill(Paint.valueOf(Color.YELLOW.toString()));
-			label.setFont(Font.font ("Verdana", 20));
+			label.setFont(Font.font ("Courier New", 20));
 			diagnosticTextFlow.getChildren().add(label);
             
 			double[] perf = new double[] {metrics.getTypeI_error(), 
@@ -825,10 +895,36 @@ public class AutomatonMachineController {
     
     public void computeGlobalFeatureImportance() {
     	
-    	myAutomaton.printGlobalFeatureImportance(globalExpController.getClassChoice());
+    	myAutomaton.computeGlobalFeatureImportance(globalExpController.getClassChoice());
     	globalExpController.setPositive_features(myAutomaton.getPositiveFeatures());
 		globalExpController.setNegative_features(myAutomaton.getNegativeFeatures());
     }
+    
+    
+    public void setLocalExpController() throws IOException, ParseException {
+		
+		FXMLLoader loader = new FXMLLoader(getClass().getResource("localExplainabilityInterface.fxml"));
+		Parent root = (Parent)loader.load();
+		localExpController = loader.getController();
+
+		
+		localExpScene = new Scene(root);
+		localExpScene.getStylesheets().add("css/WhiteOnBlack.css");
+		localExpWindow = new Stage();
+		localExpWindow.setScene(localExpScene);
+		localExpWindow.setX(primaryStage.getX() + 250);
+		localExpWindow.setY(primaryStage.getY() + 100);
+		
+		localExpWindow.setOnCloseRequest(new EventHandler<WindowEvent>() {
+            public void handle(WindowEvent we) {
+            	localExpCheckbox.setSelected(false);
+            }
+        });
+		
+		localExpController.initiateCanvas();
+		localExpController.setStage(primaryStage);
+		
+	}
     
     
 
@@ -898,6 +994,13 @@ public class AutomatonMachineController {
     @FXML
     void handleLocalExpCheckbox(ActionEvent event) {
 
+    	if(localExpCheckbox.isSelected()) {
+    		localExpWindow.show();
+		}
+		else {
+			localExpWindow.close();
+		}	
+    	
     }
     
     
@@ -920,6 +1023,17 @@ public class AutomatonMachineController {
 		return myAutomaton.getNegFeatureInterpreter(feature_number);
 	}
 
+
+	public double[] getLocalNegFeatureInterpretStrength(int feature_number) {
+		return myAutomaton.getLocNegFeatureInterpreter(feature_number);
+	}
+
+
+	public double[] getLocalFeatureInterpretStrength(int feature_number) {
+		return myAutomaton.getLocFeatureInterpreter(feature_number);
+	}
+
+	
 
 
 

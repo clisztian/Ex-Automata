@@ -25,6 +25,7 @@ public class ExAutomaton extends Application {
 	        
 	        myController.setDataInputController();
 	        myController.setGlobalExpController();
+	        myController.setLocalExpController();
 	        myController.initiateRadioButtons();
 	        myController.initiateCanvas();
 	        
