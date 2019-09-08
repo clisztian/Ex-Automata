@@ -17,7 +17,7 @@ public class ExAutomaton extends Application {
 			
 			AutomatonMachineController myController = loader.getController();
 			myController.setStage(primaryStage);		
-	        primaryStage.setTitle("Ex Automaton");
+	        primaryStage.setTitle("Ex Automata");
 	        
 	        Scene primaryScene = new Scene(root);
 	        primaryScene.getStylesheets().add("css/WhiteOnBlack.css");
@@ -26,8 +26,11 @@ public class ExAutomaton extends Application {
 	        myController.setDataInputController();
 	        myController.setGlobalExpController();
 	        myController.setLocalExpController();
+	        myController.setTsneController();
+	        myController.setSyntheticController();
 	        myController.initiateRadioButtons();
 	        myController.initiateCanvas();
+
 	        
 	        
 	        primaryStage.show();

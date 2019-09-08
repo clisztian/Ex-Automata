@@ -23,7 +23,7 @@ public class GlobalExpBarChart {
 
 			
 		//System.out.println("NumFeatures " + num_features + " " + n_clauses);
-	    final NumberAxis yAxis = new NumberAxis(0, 1.0, .05);
+	    final NumberAxis yAxis = new NumberAxis();
 		
 	    String titleGood = plot_name + " Feature Strength";
 	    String titleBad = plot_name + " Negated Feature Strength";
@@ -41,7 +41,7 @@ public class GlobalExpBarChart {
 	    }
 	    yAxis.setLabel("Clause Feature Strength");
 		
-	    String colorMe = "green";
+	    String colorMe = "#6495ED";
 	    
 	    if(negated) colorMe = "red";
 	    
@@ -85,7 +85,7 @@ public class GlobalExpBarChart {
 	        for(Node n:bc.lookupAll(".default-color0.chart-bar")) {
 	            n.setStyle("-fx-bar-fill: " + colorMe + ";\n "
 	            		+ " -fx-padding: 5;\n" + 
-	            		"    -fx-background-color: linear-gradient(derive(-fx-bar-fill,-30%), derive(-fx-bar-fill,-40%)),\n" + 
+	            		"    -fx-background-color: linear-gradient(derive(-fx-bar-fill,-70%), derive(-fx-bar-fill,-20%)),\n" + 
 	            		"                          linear-gradient(derive(-fx-bar-fill,100%), derive(-fx-bar-fill, 10%)),\n" + 
 	            		"                          linear-gradient(derive(-fx-bar-fill,30%), derive(-fx-bar-fill,-10%));\n" + 
 	            		"    -fx-background-insets: 0,1,2;");

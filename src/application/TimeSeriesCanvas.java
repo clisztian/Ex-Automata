@@ -5,6 +5,7 @@ import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.chart.AreaChart;
 import javafx.scene.chart.CategoryAxis;
+import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 
@@ -12,7 +13,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
+import javafx.scene.chart.XYChart.Data;
 import javafx.scene.chart.XYChart.Series;
+import javafx.scene.control.Tooltip;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.paint.Color;
 
@@ -35,13 +38,21 @@ public class TimeSeriesCanvas {
     		yAxis = new NumberAxis();
     	}
     	else {
-    		yAxis = new NumberAxis(0, 1, .01);
+    		
+    		if(data.get(0).length > 2) {
+    			yAxis = new NumberAxis(0, 1, .01);
+    		}
+    		else {
+    			yAxis = new NumberAxis();
+    		}
+    		
     	}
         
-        AreaChart lc = new AreaChart<>(xAxis, yAxis);
+        LineChart lc = new LineChart<>(xAxis, yAxis);
 
 	      lc.setTitle("Historical KPIs");	 
 	      lc.setAnimated(false);
+	      lc.setLegendVisible(true);
 	      //lc.setCreateSymbols(false);
 	      //lc.applyCss();
 
@@ -87,7 +98,20 @@ public class TimeSeriesCanvas {
 	   }
        catch (Exception e) {
 			e.printStackTrace();
-	   } 
+	   }
+        
+        for (final Series<String, Double> myseries : anySignals) {
+            for (final Data<String, Double> anydata : myseries.getData()) {
+            	
+                Tooltip tooltip = new Tooltip();
+                tooltip.setText(myseries.getName() + " " + anydata.getXValue());
+                Tooltip.install(anydata.getNode(), tooltip);
+                	               	                
+            }
+        }
+        
+        
+        
        
 	   for(int i = 0; i < numSeries; i++) {			 
 			data.add(anySignals.get(i));

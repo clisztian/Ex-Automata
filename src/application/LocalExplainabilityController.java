@@ -58,6 +58,7 @@ public class LocalExplainabilityController {
 		
 
 		this.feature_names = feature_names;		
+		featureInterpreterComboBox.getItems().clear();
 		featureInterpreterComboBox.getItems().add("Local");
 		featureInterpreterComboBox.getItems().addAll(feature_names);
 		featureInterpreterComboBox.getSelectionModel().selectFirst();
@@ -113,9 +114,9 @@ public class LocalExplainabilityController {
     		}
     		String[] feature_interpret_names = myAutomaton.getFeatureInterpretNames(feature_number - 1);
     	    
-    		for(int i = 0; i < feature_interpret_names.length; i++) {
-    			System.out.println(feature_interpret_names[i] + " " + feature_strength[i]);
-    		}
+//    		for(int i = 0; i < feature_interpret_names.length; i++) {
+//    			System.out.println(feature_interpret_names[i] + " " + feature_strength[i]);
+//    		}
     		
     	        	    
     		localExpChart.getChildren().set(0, GlobalExpBarChart.createBarChart(feature_interpret_names, feature_strength, 
@@ -143,9 +144,13 @@ public class LocalExplainabilityController {
     		targetText.setText("" + target);
     	}
     	
-
-		
 	}
+    
+    public void sketchNothing() throws ParseException {
+    	localExpChart.getChildren().set(0, GlobalExpBarChart.createBarChart(feature_names, null, n_clauses, negatedFeaturesCheckBox.isSelected(), "", "Local Interpretability"));
+    	predictionText.setText("");
+    	targetText.setText("");
+    }
     
 	
 	public void setPositive_features(double[] positive_features) {

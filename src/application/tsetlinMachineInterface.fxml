@@ -34,6 +34,8 @@
                <items>
                   <CheckMenuItem fx:id="globalExpCheckbox" mnemonicParsing="false" onAction="#handleGlobalExpCheckbox" text="Global Explainability" />
                   <CheckMenuItem fx:id="localExpCheckbox" mnemonicParsing="false" onAction="#handleLocalExpCheckbox" text="Local Explainability" />
+                  <CheckMenuItem fx:id="tsneCheckbox" mnemonicParsing="false" onAction="#handleTsneCheckbox" text="t-SNE Data View" />
+                  <CheckMenuItem fx:id="syntheticCheckbox" mnemonicParsing="false" onAction="#handleSyntheticCheckbox" text="Synthetic Data Generator" />
                </items>
         </Menu>
         <Menu mnemonicParsing="false" text="Help">
@@ -84,8 +86,11 @@
                   <Button fx:id="continuousLearning" disable="true" layoutX="975.0" layoutY="113.0" mnemonicParsing="false" prefHeight="32.0" prefWidth="114.0" text="Continuous" />
                   <Button fx:id="stopButton" disable="true" layoutX="1098.0" layoutY="113.0" mnemonicParsing="false" onAction="#stopLearningButton" prefHeight="32.0" prefWidth="97.0" text="Stop" />
                   <Button fx:id="beginTestButton" disable="true" layoutX="554.0" layoutY="148.0" mnemonicParsing="false" onAction="#handleTesting" prefHeight="32.0" prefWidth="80.0" text="Test" />
-                  <Button fx:id="buildAutomaton" layoutX="41.0" layoutY="194.0" mnemonicParsing="false" onAction="#handleAutomatonBuild" prefHeight="32.0" prefWidth="169.0" text="Build Automaton" />
+                  <Button fx:id="buildAutomaton" layoutX="40.0" layoutY="197.0" mnemonicParsing="false" onAction="#handleAutomatonBuild" prefHeight="32.0" prefWidth="169.0" text="Build Automaton" />
                   <CheckBox fx:id="testingOut" layoutX="842.0" layoutY="156.0" mnemonicParsing="false" text="Testting" />
+                  <RadioButton fx:id="krylovButton" layoutX="224.0" layoutY="204.0" mnemonicParsing="false" selected="true" text="Krylov" />
+                  <RadioButton fx:id="tsetkinButton" layoutX="310.0" layoutY="204.0" mnemonicParsing="false" text="Tsetlin" />
+                  <RadioButton fx:id="tsetkinButton1" layoutX="397.0" layoutY="204.0" mnemonicParsing="false" text="Krinski" />
                </children>
             </AnchorPane>
             <Label fx:id="TimeSeriesLabel1" layoutX="45.0" layoutY="609.0" prefHeight="26.0" prefWidth="293.0" text="Automaton Learning Parameters" textFill="#d7d5fb">
@@ -97,21 +102,26 @@
                </effect>
             </Label>
             <Label fx:id="smoothnessLabel3" layoutX="45.0" layoutY="650.0" prefHeight="18.0" prefWidth="135.0" text="Clause Threshold" />
-            <Label fx:id="smoothnessLabel4" layoutX="44.0" layoutY="684.0" prefHeight="18.0" prefWidth="135.0" text="Clause Feedback Rate" />
+            <Label fx:id="smoothnessLabel4" layoutX="44.0" layoutY="684.0" prefHeight="18.0" prefWidth="135.0" text="Feedback Rate" />
             <Slider fx:id="clauseThresholdSlider" blockIncrement="0.25" layoutX="196.0" layoutY="647.0" max="3.0" min="0.25" onKeyPressed="#handleStepsChange" onMouseDragged="#handleStepsChange" prefHeight="24.0" prefWidth="169.0" value="1.0" />
             <Slider fx:id="rateSlider" blockIncrement="0.5" layoutX="196.0" layoutY="681.0" max="10.0" onKeyPressed="#handleRateChange" onMouseDragged="#handleRateChange" prefHeight="24.0" prefWidth="169.0" value="5.0" />
             <TextField fx:id="clauseThresholdText" layoutX="365.0" layoutY="646.0" prefHeight="26.0" prefWidth="52.0" text="1" />
             <TextField fx:id="rateSlideText" layoutX="365.0" layoutY="680.0" prefHeight="26.0" prefWidth="52.0" text="5" />
             <TabPane layoutX="12.0" layoutY="14.0" prefHeight="579.0" prefWidth="1212.0" tabClosingPolicy="UNAVAILABLE">
               <tabs>
-                <Tab fx:id="diagnosticsTab" text="Diagnostics">
+                <Tab fx:id="diagnosticsTab" text="Diagnostica">
                      <content>
                         <TextFlow fx:id="diagnosticTextFlow" prefHeight="200.0" prefWidth="200.0" />
                      </content>
                 </Tab>
-                  <Tab fx:id="performanceTab" text="Performance History">
+                  <Tab fx:id="performanceTab" text="Historica">
                      <content>
                         <StackPane fx:id="historicalPane" prefHeight="150.0" prefWidth="200.0" />
+                     </content>
+                  </Tab>
+                  <Tab fx:id="syntheticDataTab" text="Synthetica">
+                     <content>
+                        <StackPane fx:id="syntheticPane" prefHeight="150.0" prefWidth="200.0" />
                      </content>
                   </Tab>
               </tabs>

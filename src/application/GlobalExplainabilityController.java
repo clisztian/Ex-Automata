@@ -53,8 +53,8 @@ public class GlobalExplainabilityController {
 	
 	public void setFeatureNameComboBox(String[] feature_names) {
 		
-
 		this.feature_names = feature_names;		
+		featureInterpreterComboBox.getItems().clear();
 		featureInterpreterComboBox.getItems().add("Global");
 		featureInterpreterComboBox.getItems().addAll(feature_names);
 		featureInterpreterComboBox.getSelectionModel().selectFirst();
@@ -63,6 +63,8 @@ public class GlobalExplainabilityController {
 	
 	public void setClassNameComboBox(String[] class_names) {
 		this.class_names = class_names;
+		
+		expClassComboBox.getItems().clear();
 		expClassComboBox.getItems().addAll(class_names);
 		expClassComboBox.getSelectionModel().selectFirst();
 	}
@@ -72,6 +74,7 @@ public class GlobalExplainabilityController {
     void handleClassChange(ActionEvent event) throws ParseException {
 
     	class_choice = expClassComboBox.getSelectionModel().getSelectedIndex();
+    	myAutomaton.switchClass();
     	sketchCanvas();
 
     }
@@ -145,7 +148,6 @@ public class GlobalExplainabilityController {
         	}
     		
     	}
-    	
 
 
     }
