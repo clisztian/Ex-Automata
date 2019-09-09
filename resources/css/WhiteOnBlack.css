@@ -257,6 +257,9 @@
 .menu-up-arrow, .menu-down-arrow {
     -fx-effect: null;
 }
+
+.menu .label{     -fx-text-fill: white;}
+
 /*******************************************************************************
  *                                                                             *
  * TabPane                                                                     *

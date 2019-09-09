@@ -1347,7 +1347,7 @@ public class AutomatonMachineController {
 	        	
 	        	float trans = (float) (.9f*(data[i][2] - min)/(max - min) + .1f);
 	        	
-	        	myColor = defaultColors[dataInputController.getData().getLabels()[i]];
+	        	myColor = defaultColors[dataInputController.getData().getLabels()[i]%(defaultColors.length-1)];
 	        	
 	        	String rgb = String.format("%d, %d, %d",
 	        	        (int) (myColor.getRed() * 255),
@@ -1499,7 +1499,7 @@ public class AutomatonMachineController {
         
     	public AdjustableNode(int sel, float[] uv) {
 	    	
-  	      setPrefSize(20, 20);
+  	      setPrefSize(30, 30);
   	      setStyle("-fx-background-color: #4682B4;");
   	
   	      setOnMousePressed(new EventHandler<MouseEvent>() {
