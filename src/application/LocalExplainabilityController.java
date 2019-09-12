@@ -31,9 +31,6 @@ public class LocalExplainabilityController {
     private ComboBox<String> featureInterpreterComboBox;
 
     @FXML
-    private Slider numberFeaturesPlottedSlider;
-
-    @FXML
     private CheckBox negatedFeaturesCheckBox;
 
     @FXML

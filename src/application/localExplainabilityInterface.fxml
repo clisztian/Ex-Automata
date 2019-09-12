@@ -3,29 +3,26 @@
 <?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.Slider?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="669.0" prefWidth="781.0" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.LocalExplainabilityController">
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="650.0" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.LocalExplainabilityController">
    <children>
       <AnchorPane prefHeight="552.0" prefWidth="781.0">
          <children>
-            <StackPane fx:id="localExpChart" layoutX="3.0" layoutY="3.0" prefHeight="526.0" prefWidth="775.0" />
+            <StackPane fx:id="localExpChart" layoutX="3.0" layoutY="3.0" prefHeight="485.0" prefWidth="650.0" />
          </children></AnchorPane>
       <AnchorPane prefHeight="169.0" prefWidth="781.0">
          <children>
-            <Label layoutX="27.0" layoutY="44.0" prefHeight="16.0" prefWidth="134.0" text="Feature Interpreter" />
-            <ComboBox fx:id="featureInterpreterComboBox" layoutX="27.0" layoutY="73.0" onAction="#handleFeatureInterpreterComboBox" prefWidth="150.0" />
-            <Slider fx:id="numberFeaturesPlottedSlider" blockIncrement="1.0" layoutX="196.0" layoutY="75.0" max="20.0" min="5.0" onKeyPressed="#handleNumFeaturesPlotted" onMouseClicked="#handleNumFeaturesPlotted" value="10.0" />
-            <Label layoutX="204.0" layoutY="44.0" prefHeight="16.0" prefWidth="107.0" text="Num Features" />
-            <CheckBox fx:id="negatedFeaturesCheckBox" layoutX="528.0" layoutY="74.0" mnemonicParsing="false" onAction="#handleNegatedFeatures" prefHeight="18.0" prefWidth="173.0" text="Negated Features" />
-            <Label layoutX="349.0" layoutY="43.0" prefHeight="18.0" prefWidth="84.0" text="Prediction" />
-            <TextField fx:id="predictionText" layoutX="351.0" layoutY="73.0" prefHeight="26.0" prefWidth="68.0" />
-            <TextField fx:id="targetText" layoutX="433.0" layoutY="73.0" prefHeight="26.0" prefWidth="68.0" />
-            <Label layoutX="433.0" layoutY="43.0" prefHeight="18.0" prefWidth="84.0" text="Target" />
+            <Label layoutX="27.0" layoutY="25.0" prefHeight="18.0" prefWidth="150.0" text="Feature Interpreter" />
+            <ComboBox fx:id="featureInterpreterComboBox" layoutX="27.0" layoutY="59.0" onAction="#handleFeatureInterpreterComboBox" prefHeight="28.0" prefWidth="158.0" />
+            <CheckBox fx:id="negatedFeaturesCheckBox" layoutX="445.0" layoutY="64.0" mnemonicParsing="false" onAction="#handleNegatedFeatures" prefHeight="19.0" prefWidth="150.0" text="Negated Features" />
+            <Label layoutX="219.0" layoutY="25.0" prefHeight="18.0" prefWidth="84.0" text="Prediction" />
+            <TextField fx:id="predictionText" layoutX="219.0" layoutY="60.0" prefHeight="26.0" prefWidth="68.0" />
+            <TextField fx:id="targetText" layoutX="334.0" layoutY="60.0" prefHeight="26.0" prefWidth="68.0" />
+            <Label layoutX="334.0" layoutY="25.0" prefHeight="18.0" prefWidth="84.0" text="Target" />
          </children>
       </AnchorPane>
    </children>

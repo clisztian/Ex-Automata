@@ -1,5 +1,6 @@
 package application;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -136,8 +137,6 @@ public class AutomatonMachineController {
     @FXML
     private Button newSampleButton;
 
-    @FXML
-    private Button continuousLearning;
 
     @FXML
     private Button stopButton;
@@ -283,11 +282,18 @@ public class AutomatonMachineController {
 			beginTestButton.setDisable(false);
 			stopButton.setDisable(false);
 			beginTrainingButton.setDisable(false);
-			continuousLearning.setDisable(false);
 			
 			tsneController.setData(dataInputController.getData().getDoubleData());
 			tsneController.setAutomatonController(this);
 			localSynthetic = new float[1][dataInputController.getFeatureNames().length];
+			
+			for(int i = 0; i < dataInputController.getFeatureNames().length; i++) {
+	    		
+	    		float[] uv = dataInputController.getBinarizer().getFeatureValues(i);	 
+	    		int synthetic_val = rng.nextInt(uv.length);
+	    		
+	    		localSynthetic[0][i] = uv[synthetic_val];
+			}
 			
 			syntheticController.setAutomaton(this);
 			syntheticController.updateSyntheticCanvas();
@@ -314,13 +320,7 @@ public class AutomatonMachineController {
     	}
     }
 
-    @FXML
-    void handleContinuousLearning(ActionEvent event) throws Exception {
 
-    	
-
-    	
-    }
 
     @FXML
     void handleNewSample()  throws Exception {
@@ -407,6 +407,13 @@ public class AutomatonMachineController {
     		else localExpController.setTarget(myAutomaton.getTargets()[rand_samp]);
     		
     		localExpController.sketchCanvas();
+    		
+    		float[] synth = myAutomaton.getOriginalData().getSample(rand_samp);
+    		for(int i = 0; i < synth.length; i++) {
+    			localSynthetic[0][i] = synth[i];
+    		}
+    		syntheticController.updateSyntheticCanvas();
+    		
     		
     		if(regression || encodeContinuous) {
     			printRegressionSample(myAutomaton.getOriginalData().getSample(rand_samp), dataInputController.decodeClass(pred_class), myAutomaton.getRegTargets()[rand_samp]);
@@ -1077,10 +1084,8 @@ public class AutomatonMachineController {
     }
     
 
-    public void initiateCanvas() throws ParseException {
-		
+    public void initiateCanvas() throws ParseException {		
 		historicalPane.getChildren().add(TimeSeriesCanvas.createBarChart(performanceRecord, diagnosticName));
-		
 	}
     
 
@@ -1479,10 +1484,53 @@ public class AutomatonMachineController {
 	    		
 	    	}
 	    	sc.getData().addAll(synth);
-	    		
-	    	
 	    }
 	    
+		return sc;
+    }
+    
+    
+
+    public ScatterChart updateSyntheticDataChart() throws ParseException {
+		
+		final CategoryAxis xAxis = new CategoryAxis();
+	    final NumberAxis yAxis = new NumberAxis(0,1.0,.10);
+		
+	    final ScatterChart<String,Number> sc = new
+	            ScatterChart<String,Number>(xAxis,yAxis);
+
+	    
+	    if(myAutomaton != null) {
+	    	
+	    	sc.setTitle("Synthetic Data Generator");
+		    sc.setAnimated(false);
+		    sc.setLegendVisible(false);
+		    
+		    String[] names = globalExpController.getFeature_names();
+		    
+		    XYChart.Series synth = new XYChart.Series();
+		    
+		    
+	    	for(int i = 0; i < names.length; i++) {
+	    		
+	    		float[] uv = dataInputController.getBinarizer().getFeatureValues(i);	 
+	    		
+	    		int j = 0;
+	    		while(j < uv.length) {
+	    			if(localSynthetic[0][i] != uv[j]) j++;
+	    			else break;
+	    		}
+
+	    		float val = (float)j/(float)uv.length;	    		
+	    		final XYChart.Data<String, Number> dataXY = new XYChart.Data(names[i], val);
+	    		
+	    		dataXY.setNode(new AdjustableNode(i, uv));
+	    		
+	    		synth.getData().add(dataXY);
+	    		
+	    	}
+	    	sc.getData().addAll(synth);
+	    }	    
 		return sc;
     }
     

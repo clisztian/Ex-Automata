@@ -36,11 +36,12 @@ public class SyntheticController {
     
     public void updateSyntheticCanvas() throws ParseException {
     	
-    	
-    	syntheticPane.getChildren().set(0,myAutomaton.createSyntheticDataChart());
+    	syntheticPane.getChildren().set(0,myAutomaton.updateSyntheticDataChart());
     		
     	syntheticPaneHeight = syntheticPane.getHeight();
     	syntheticPaneWidth = syntheticPane.getWidth();
     }
+    
+    
 	
 }

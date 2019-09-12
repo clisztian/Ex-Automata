@@ -27,9 +27,6 @@ public class GlobalExplainabilityController {
     private ComboBox<String> featureInterpreterComboBox;
 
     @FXML
-    private Slider numberFeaturesPlottedSlider;
-
-    @FXML
     private CheckBox negatedFeaturesCheckBox;
 
     @FXML
