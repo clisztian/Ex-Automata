@@ -231,6 +231,8 @@ public class AutomatonMachineController {
 	private float[][] localSynthetic;
 
 	
+	Color[] regressionColors = null;
+	
 	Color[] defaultColors = new Color[] {Color.CORNFLOWERBLUE, Color.CRIMSON, Color.LIGHTPINK, Color.ALICEBLUE, Color.BLUEVIOLET, Color.DARKCYAN, 
 			Color.DODGERBLUE, Color.FORESTGREEN, Color.FUCHSIA, Color.GOLD, Color.IVORY, Color.LIGHTGREEN, 	Color.LIGHTPINK, Color.LIME, 
 			Color.MEDIUMORCHID, Color.OLIVEDRAB, Color.ORANGERED, Color.ROYALBLUE, Color.SEAGREEN, Color.TEAL};
@@ -287,12 +289,31 @@ public class AutomatonMachineController {
 			tsneController.setAutomatonController(this);
 			localSynthetic = new float[1][dataInputController.getFeatureNames().length];
 			
+
+			
+		    
 			for(int i = 0; i < dataInputController.getFeatureNames().length; i++) {
 	    		
 	    		float[] uv = dataInputController.getBinarizer().getFeatureValues(i);	 
 	    		int synthetic_val = rng.nextInt(uv.length);
 	    		
 	    		localSynthetic[0][i] = uv[synthetic_val];
+	    		
+	    		
+			}
+			
+			regressionColors = new Color[dataInputController.getTargetResolution()];
+			Color x = Color.CORNFLOWERBLUE;
+		    Color y = Color.CRIMSON;
+			for(int i = 0; i < dataInputController.getTargetResolution(); i++) {
+				
+				float inverse_blending = (float)i/dataInputController.getTargetResolution();
+	    		float blending = (1f - inverse_blending);
+	    	    double red =   x.getRed()   * blending   +   y.getRed()   * inverse_blending;
+	    		double green = x.getGreen() * blending   +   y.getGreen() * inverse_blending;
+	    		double blue =  x.getBlue()  * blending   +   y.getBlue()  * inverse_blending;
+
+	    		regressionColors[i] = new Color (red, green, blue, 1.0);								
 			}
 			
 			syntheticController.setAutomaton(this);
@@ -1352,7 +1373,13 @@ public class AutomatonMachineController {
 	        	
 	        	float trans = (float) (.9f*(data[i][2] - min)/(max - min) + .1f);
 	        	
-	        	myColor = defaultColors[dataInputController.getData().getLabels()[i]%(defaultColors.length-1)];
+	        	if(dataInputController.isContinuousEncoder()) {
+	        		myColor = regressionColors[dataInputController.getData().getLabels()[i]%(defaultColors.length-1)];
+	        	}
+	        	else {
+	        		myColor = defaultColors[dataInputController.getData().getLabels()[i]%(defaultColors.length-1)];
+	        	}
+	        	
 	        	
 	        	String rgb = String.format("%d, %d, %d",
 	        	        (int) (myColor.getRed() * 255),

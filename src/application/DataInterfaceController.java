@@ -86,6 +86,9 @@ public class DataInterfaceController {
 	    @FXML
 	    private CheckBox semicolonCheckBox;
 	    
+	    @FXML
+	    private CheckBox categoryCheckBox;
+	    
 	    private Window primaryStage;
 	    
 		private int resolution = 70;
@@ -119,7 +122,8 @@ public class DataInterfaceController {
 	    		else if(problemTypeChoiceBox.getSelectionModel().getSelectedIndex() == 2) { //encodeDecode
 	    			
 	    			feature_names = dataInterface.setFeatureNames();
-	    			data = dataInterface.getContinuousData(feature_names, resolution);
+	    				    			
+	    			data = dataInterface.getContinuousMixedData(feature_names, resolution);
 	    			
 	    			float min = dataInterface.getMin();
 	    			float delta = (dataInterface.getMax() - dataInterface.getMin())/(float)resolution;
@@ -229,7 +233,7 @@ public class DataInterfaceController {
 		    		data = dataInterface.uploadRegressionData(feature_names);
 		    	}
 		    	else if(problemTypeChoiceBox.getSelectionModel().getSelectedIndex() == 2) { //encodeDecode
-	    			data = dataInterface.getContinuousData(feature_names, resolution);
+	    			data = dataInterface.getContinuousMixedData(feature_names, resolution);
 		    	}
 		    	else {
 		    		data = dataInterface.getTwoClassData(feature_names, ""); 	
@@ -288,6 +292,9 @@ public class DataInterfaceController {
 
 
 
+		public int getTargetResolution() {
+			return dataInterface.getTargetResolution();
+		}
 
 
 		public boolean isContinuousEncoder() {
