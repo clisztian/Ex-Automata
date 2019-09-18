@@ -7,6 +7,8 @@ import javafx.event.ActionEvent;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Slider;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import javafx.stage.Window;
@@ -42,6 +44,10 @@ public class GlobalExplainabilityController {
 	private int class_choice;
 
 	private int feature_number = 0;
+
+	private int end_feature = 10;
+
+	private double[] feature_strength = null;
 
 
 	public void setAutomaton(AutomatonMachineController myAutomaton) {
@@ -79,6 +85,7 @@ public class GlobalExplainabilityController {
     @FXML
     void handleFeatureInterpreterComboBox(ActionEvent event) throws ParseException {
 
+    	end_feature = 10;
     	feature_number = featureInterpreterComboBox.getSelectionModel().getSelectedIndex();
     	sketchCanvas();
     }
@@ -87,6 +94,28 @@ public class GlobalExplainabilityController {
     void handleNegatedFeatures(ActionEvent event) throws ParseException {
     	sketchCanvas(); 	
     }
+    
+    
+    @FXML
+    void handleChartShift(KeyEvent event) throws ParseException {
+
+    	if(event.getCode() == KeyCode.RIGHT) {
+    		
+    		if(end_feature < feature_strength.length) {
+    			end_feature++;
+    			sketchCanvas();
+    			
+    		}    
+    	} 
+    	else if(event.getCode() == KeyCode.LEFT) {
+    	
+    		if(end_feature > 10) {
+    			end_feature--;
+    			sketchCanvas();
+    		}   
+    	}    	
+    }
+    
 
     @FXML
     void handleNumFeaturesPlotted() {
@@ -112,17 +141,17 @@ public class GlobalExplainabilityController {
 	public void initiateCanvas() throws ParseException {
 		
 		feature_names = new String[] {"No Classes ", "Yet"};
-		globalExpChart.getChildren().add(GlobalExpBarChart.createBarChart(feature_names, feature_importance, n_clauses, negatedFeaturesCheckBox.isSelected(), "", "Global Interpretability"));
-		
+		globalExpChart.getChildren().add(GlobalExpBarChart.createBarChart(feature_names, feature_importance, n_clauses, negatedFeaturesCheckBox.isSelected(), "", "Global Interpretability", 10));
+		globalExpChart.setFocusTraversable(true);
 	}
 
     public void sketchCanvas() throws ParseException {
     	
     	if(feature_number > 0) {
     		
-    		double[] feature_strength = null;
+    		
     		if(negatedFeaturesCheckBox.isSelected()) {
-    			feature_strength = myAutomaton.getNegFeatureInterpretStrength(feature_number - 1);
+    			feature_strength  = myAutomaton.getNegFeatureInterpretStrength(feature_number - 1);
     		}
     		else {
     			feature_strength = myAutomaton.getFeatureInterpretStrength(feature_number - 1);
@@ -131,17 +160,19 @@ public class GlobalExplainabilityController {
     	    
     	        	    
     		globalExpChart.getChildren().set(0, GlobalExpBarChart.createBarChart(feature_interpret_names, feature_strength, 
-    				n_clauses, negatedFeaturesCheckBox.isSelected(), featureInterpreterComboBox.getSelectionModel().getSelectedItem(), "Global Interpretability"));
+    				n_clauses, negatedFeaturesCheckBox.isSelected(), featureInterpreterComboBox.getSelectionModel().getSelectedItem(), "Global Interpretability", end_feature));
     		
     	}
     	else {
     		
+    		feature_strength = positive_features;
+    		
         	if(!negatedFeaturesCheckBox.isSelected()) {
         		
-        		globalExpChart.getChildren().set(0, GlobalExpBarChart.createBarChart(feature_names, positive_features, n_clauses, negatedFeaturesCheckBox.isSelected(), "", "Global Interpretability"));
+        		globalExpChart.getChildren().set(0, GlobalExpBarChart.createBarChart(feature_names, positive_features, n_clauses, negatedFeaturesCheckBox.isSelected(), "", "Global Interpretability", end_feature));
         	}
         	else {
-        		globalExpChart.getChildren().set(0, GlobalExpBarChart.createBarChart(feature_names, negative_features, n_clauses, negatedFeaturesCheckBox.isSelected(), "", "Global Interpretability"));
+        		globalExpChart.getChildren().set(0, GlobalExpBarChart.createBarChart(feature_names, negative_features, n_clauses, negatedFeaturesCheckBox.isSelected(), "", "Global Interpretability", end_feature ));
         	}
     		
     	}

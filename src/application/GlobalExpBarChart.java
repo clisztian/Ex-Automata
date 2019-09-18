@@ -15,7 +15,9 @@ import javafx.scene.control.Tooltip;
 public class GlobalExpBarChart {
 
 
-	public static BarChart createBarChart(String[] feature_names, double[] feature_importance, int n_clauses, boolean negated, String plot_name, String title) throws ParseException {
+	private static int screenMAX = 20;
+
+	public static BarChart createBarChart(String[] feature_names, double[] feature_importance, int n_clauses, boolean negated, String plot_name, String title, int end_features) throws ParseException {
 	
 		int num_features = feature_names.length;
 		final CategoryAxis xAxis = new CategoryAxis();
@@ -43,9 +45,13 @@ public class GlobalExpBarChart {
 		
 	    String colorMe = "#6495ED";
 	    
+	    if(title.contains("Local")) {
+	    	colorMe = "#2E8B57";
+	    }
+	    
 	    if(negated) colorMe = "red";
 	    
-	    if(feature_importance != null) {
+	    if(feature_importance != null && end_features <= feature_importance.length) {
 	
 	        
 	        XYChart.Series pin = new XYChart.Series();
@@ -62,9 +68,9 @@ public class GlobalExpBarChart {
 	        
 	        
 	        
+	        int start = Math.max(0, end_features - screenMAX  );
 	        
-	        
-	        for(int i = 0; i < num_features; i++) {
+	        for(int i = start; i < end_features; i++) {
 	        	
 	        	pin.getData().add(new XYChart.Data(feature_names[i], feature_importance[i]/sum));
 	        }      

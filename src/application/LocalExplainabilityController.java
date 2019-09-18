@@ -8,6 +8,8 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import javafx.stage.Window;
@@ -44,6 +46,10 @@ public class LocalExplainabilityController {
 
 	private int prediction;
 	private int target;
+
+	private int end_feature = 10;
+
+	private double[] feature_strength = null;
 	
 	
 	public void setAutomaton(AutomatonMachineController myAutomaton) {
@@ -67,6 +73,7 @@ public class LocalExplainabilityController {
     @FXML
     void handleFeatureInterpreterComboBox(ActionEvent event) {
     	
+    	end_feature = 10;
     	feature_number = featureInterpreterComboBox.getSelectionModel().getSelectedIndex();
     	try {
 			sketchCanvas();
@@ -93,41 +100,59 @@ public class LocalExplainabilityController {
 		
 		feature_names = new String[] {"No Classes ", "Yet"};
 		double[] feature_importance = null;
-		localExpChart.getChildren().add(GlobalExpBarChart.createBarChart(feature_names, feature_importance, 0, negatedFeaturesCheckBox.isSelected(), "", "Local Interpretability"));		
+		localExpChart.getChildren().add(GlobalExpBarChart.createBarChart(feature_names, feature_importance, 0, negatedFeaturesCheckBox.isSelected(), "", "Local Interpretability", 10));	
+		localExpChart.setFocusTraversable(true);
 	}
 	
 	
+    @FXML
+    void handleChartShift(KeyEvent event) throws ParseException {
+
+    	if(event.getCode() == KeyCode.RIGHT) {
+    		
+    		if(end_feature < feature_strength.length) {
+    			end_feature++;
+    			sketchCanvas();
+    			
+    		}    
+    	} 
+    	else if(event.getCode() == KeyCode.LEFT) {
+    	
+    		if(end_feature > 10) {
+    			end_feature--;
+    			sketchCanvas();
+    		}   
+    	}    	
+    }
+	
+	
     public void sketchCanvas() throws ParseException {
-		
     	
     	if(feature_number > 0) {
     		
-    		double[] feature_strength = null;
+
     		if(negatedFeaturesCheckBox.isSelected()) {
-    			feature_strength = myAutomaton.getLocalNegFeatureInterpretStrength(feature_number - 1);
+    			feature_strength  = myAutomaton.getLocalNegFeatureInterpretStrength(feature_number - 1);
     		}
     		else {
     			feature_strength = myAutomaton.getLocalFeatureInterpretStrength(feature_number - 1);
     		}
     		String[] feature_interpret_names = myAutomaton.getFeatureInterpretNames(feature_number - 1);
-    	    
-//    		for(int i = 0; i < feature_interpret_names.length; i++) {
-//    			System.out.println(feature_interpret_names[i] + " " + feature_strength[i]);
-//    		}
-    		
+    	        		
     	        	    
     		localExpChart.getChildren().set(0, GlobalExpBarChart.createBarChart(feature_interpret_names, feature_strength, 
-    				n_clauses, negatedFeaturesCheckBox.isSelected(), featureInterpreterComboBox.getSelectionModel().getSelectedItem(), "Local Interpretability"));
+    				n_clauses, negatedFeaturesCheckBox.isSelected(), featureInterpreterComboBox.getSelectionModel().getSelectedItem(), "Local Interpretability", end_feature));
     		
     	}
     	else {
     		
+    		feature_strength = positive_features;
         	if(!negatedFeaturesCheckBox.isSelected()) {
         		
-        		localExpChart.getChildren().set(0, GlobalExpBarChart.createBarChart(feature_names, positive_features, n_clauses, negatedFeaturesCheckBox.isSelected(), "", "Local Interpretability"));
+        		localExpChart.getChildren().set(0, GlobalExpBarChart.createBarChart(feature_names, positive_features, n_clauses, negatedFeaturesCheckBox.isSelected(), "", "Local Interpretability", end_feature));
         	}
         	else {
-        		localExpChart.getChildren().set(0, GlobalExpBarChart.createBarChart(feature_names, negative_features, n_clauses, negatedFeaturesCheckBox.isSelected(), "", "Local Interpretability"));
+        		localExpChart.getChildren().set(0, GlobalExpBarChart.createBarChart(feature_names, negative_features, n_clauses, negatedFeaturesCheckBox.isSelected(), "", "Local Interpretability", end_feature));
         	}
     		
     	}
@@ -144,7 +169,7 @@ public class LocalExplainabilityController {
 	}
     
     public void sketchNothing() throws ParseException {
-    	localExpChart.getChildren().set(0, GlobalExpBarChart.createBarChart(feature_names, null, n_clauses, negatedFeaturesCheckBox.isSelected(), "", "Local Interpretability"));
+    	localExpChart.getChildren().set(0, GlobalExpBarChart.createBarChart(feature_names, null, n_clauses, negatedFeaturesCheckBox.isSelected(), "", "Local Interpretability", end_feature ));
     	predictionText.setText("");
     	targetText.setText("");
     }

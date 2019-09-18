@@ -12,7 +12,7 @@
    <children>
       <AnchorPane prefHeight="552.0" prefWidth="781.0">
          <children>
-            <StackPane fx:id="localExpChart" layoutX="3.0" layoutY="3.0" prefHeight="485.0" prefWidth="650.0" />
+            <StackPane fx:id="localExpChart" layoutX="3.0" layoutY="3.0" onKeyPressed="#handleChartShift" prefHeight="485.0" prefWidth="650.0" />
          </children></AnchorPane>
       <AnchorPane prefHeight="169.0" prefWidth="781.0">
          <children>

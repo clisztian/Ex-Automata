@@ -11,7 +11,7 @@
    <children>
       <AnchorPane prefHeight="547.0" prefWidth="728.0">
          <children>
-            <StackPane fx:id="globalExpChart" layoutX="3.0" layoutY="3.0" prefHeight="508.0" prefWidth="644.0" />
+            <StackPane fx:id="globalExpChart" layoutX="3.0" layoutY="3.0" onKeyPressed="#handleChartShift" prefHeight="508.0" prefWidth="644.0" />
          </children></AnchorPane>
       <AnchorPane prefHeight="115.0" prefWidth="695.0">
          <children>
