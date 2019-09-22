@@ -87,6 +87,11 @@ public class GlobalExplainabilityController {
 
     	end_feature = 10;
     	feature_number = featureInterpreterComboBox.getSelectionModel().getSelectedIndex();
+    	
+    	if(feature_number == 0) {
+    		end_feature = Math.min(feature_names.length,10);
+    	}
+ 	
     	sketchCanvas();
     }
 

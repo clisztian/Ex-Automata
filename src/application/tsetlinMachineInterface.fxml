@@ -51,9 +51,9 @@
                <children>
                   <Label fx:id="smoothnessLabel31" layoutX="19.0" layoutY="92.0" prefHeight="18.0" prefWidth="135.0" text="Number Clauses" />
                   <Label fx:id="smoothnessLabel41" layoutX="15.0" layoutY="160.0" prefHeight="18.0" prefWidth="144.0" text=" Automaton States" />
-                  <Slider fx:id="numClausesSlider" blockIncrement="0.25" layoutX="165.0" layoutY="89.0" max="5.0" min="0.25" onKeyPressed="#handleNumClausesChange" onMouseDragged="#handleNumClausesChange" prefHeight="24.0" prefWidth="169.0" value="1.0" />
+                  <Slider fx:id="numClausesSlider" blockIncrement="10" layoutX="165.0" layoutY="89.0" max="2000.0" min="10" onKeyPressed="#handleNumClausesChange" onMouseDragged="#handleNumClausesChange" prefHeight="24.0" prefWidth="169.0" value="300.0" />
                   <Slider fx:id="numStatesSlider" blockIncrement="0.25" layoutX="166.0" layoutY="157.0" max="10.0" min="0.25" onKeyPressed="#handleNumStatesChange" onMouseDragged="#handleNumStatesChange" prefHeight="24.0" prefWidth="169.0" value="2.0" />
-                  <TextField fx:id="numClausesText" layoutX="335.0" layoutY="88.0" prefHeight="26.0" prefWidth="52.0" text="1" />
+                  <TextField fx:id="numClausesText" layoutX="335.0" layoutY="88.0" prefHeight="26.0" prefWidth="52.0" text="300" />
                   <TextField fx:id="numStatesText" layoutX="335.0" layoutY="156.0" prefHeight="26.0" prefWidth="52.0" text="2" />
                   <Label fx:id="TimeSeriesLabel11" layoutX="425.0" layoutY="14.0" prefHeight="26.0" prefWidth="293.0" text="Training Parameters" textFill="#d7d5fb">
                      <font>
@@ -99,11 +99,12 @@
                      </effect>
                   </Label>
                   <Label fx:id="smoothnessLabel3" layoutX="19.0" layoutY="56.0" prefHeight="18.0" prefWidth="135.0" text="Clause Threshold" />
-                  <Slider fx:id="clauseThresholdSlider" blockIncrement="0.25" layoutX="165.0" layoutY="54.0" max="3.0" min="0.25" onKeyPressed="#handleStepsChange" onMouseDragged="#handleStepsChange" prefHeight="24.0" prefWidth="169.0" value="1.0" />
-                  <TextField fx:id="clauseThresholdText" layoutX="334.0" layoutY="53.0" prefHeight="26.0" prefWidth="52.0" text="1" />
+                  <Slider fx:id="clauseThresholdSlider" blockIncrement="1.0" layoutX="165.0" layoutY="54.0" max="1000.0" min="1.0" onKeyPressed="#handleStepsChange" onMouseDragged="#handleStepsChange" prefHeight="24.0" prefWidth="169.0" value="30.0" />
+                  <TextField fx:id="clauseThresholdText" layoutX="334.0" layoutY="53.0" prefHeight="26.0" prefWidth="52.0" text="30" />
                   <Label fx:id="smoothnessLabel4" layoutX="19.0" layoutY="127.0" prefHeight="18.0" prefWidth="135.0" text="Feedback Rate" />
-                  <Slider fx:id="rateSlider" blockIncrement="0.5" layoutX="166.0" layoutY="124.0" max="10.0" onKeyPressed="#handleRateChange" onMouseDragged="#handleRateChange" prefHeight="24.0" prefWidth="169.0" value="5.0" />
-                  <TextField fx:id="rateSlideText" layoutX="335.0" layoutY="123.0" prefHeight="26.0" prefWidth="52.0" text="5" />
+                  <Slider fx:id="rateSlider" blockIncrement="10.0" layoutX="166.0" layoutY="124.0" max="200.0" min="1.0" onKeyPressed="#handleRateChange" onMouseDragged="#handleRateChange" prefHeight="24.0" prefWidth="169.0" value="100.0" />
+                  <TextField fx:id="rateSlideText" layoutX="335.0" layoutY="123.0" prefHeight="26.0" prefWidth="52.0" text="100" />
+                  <CheckBox fx:id="boostCheck" layoutX="459.0" layoutY="206.0" mnemonicParsing="false" text="Boost" />
                </children>
             </AnchorPane>
             <TabPane layoutX="8.0" layoutY="14.0" prefHeight="508.0" prefWidth="1090.0" tabClosingPolicy="UNAVAILABLE">

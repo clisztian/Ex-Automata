@@ -54,8 +54,8 @@ public class AutomatonMachineController {
 	private SyntheticController syntheticController;
 
 	private ReferenceMetrics metrics;
-    private double number_clause_multiplier = 1f;
-    private double learn_rate = 5f;
+    private int number_clause_multiplier = 300;
+    private double learn_rate = 100f;
     private Random rng;
     
     private boolean isTraining = false;
@@ -198,6 +198,10 @@ public class AutomatonMachineController {
     @FXML
     private CheckBox testingOut;
     
+    @FXML
+    private CheckBox boostCheck;
+    
+    
 //    @FXML
 //    private StackPane syntheticPane;
     
@@ -205,7 +209,7 @@ public class AutomatonMachineController {
     
 	private double number_states_multiplier = 1.0;
 
-	private double threshold_multiplier = 1.0;
+	private int threshold_multiplier = 30;
 
 	private int n_training_rounds = 100;
 
@@ -257,12 +261,13 @@ public class AutomatonMachineController {
 			
 			myAutomaton = new AutomatonLearningMachine(dataInputController.getBinarizer(), 
                     dataInputController.getData(), 
-                    (float)threshold_multiplier, 
-                    (float)number_clause_multiplier, 
+                    threshold_multiplier, 
+                    number_clause_multiplier, 
                     (float)number_states_multiplier, 
                     (float)learn_rate,
                     dataInputController.isRegression(), 
-                    dataInputController.getClassNames().length);
+                    dataInputController.getClassNames().length, 
+                    boostCheck.isSelected());
 						
 			nClasses = dataInputController.getClassNames().length;
 			regression = dataInputController.isRegression();
@@ -277,7 +282,7 @@ public class AutomatonMachineController {
 			localExpController.setFeatureNameComboBox(dataInputController.getFeatureNames());
 			localExpController.setAutomaton(this);
 			
-			diagnosticName = new String[] {"Sensitivity", "Specificity", "Accuracy", "F1", "F2", "MCC"};
+			diagnosticName = new String[] {"Specificity", "Accuracy", "F1"};
 			performanceRecord = new ArrayList<double[]>();
 			
 			newSampleButton.setDisable(false);
@@ -319,6 +324,12 @@ public class AutomatonMachineController {
 			syntheticController.setAutomaton(this);
 			syntheticController.updateSyntheticCanvas();
 
+			
+	    	training_sample_list = new ArrayList<Integer>();
+			for(int i = 0; i < n_samples; i++) training_sample_list.add(i);
+			Collections.shuffle(training_sample_list);
+			
+			
 			System.out.println("Automaton Initiated");
 		}
 	}
@@ -470,8 +481,10 @@ public class AutomatonMachineController {
     
     public void switchClass() {
     	
-    	
-		myAutomaton.computeGlobalFeatureImportance(globalExpController.getClassChoice());
+    	if(globalExpController.getClassChoice() >= 0) {
+    		myAutomaton.computeGlobalFeatureImportance(globalExpController.getClassChoice());
+    	}
+		
 		
 		globalExpController.setPositive_features(myAutomaton.getPositiveFeatures());
 		globalExpController.setNegative_features(myAutomaton.getNegativeFeatures());
@@ -571,10 +584,10 @@ public class AutomatonMachineController {
 	@FXML
     void handleNumClausesChange() {
 
-    	number_clause_multiplier = numClausesSlider.getValue();
-    	numClausesText.setText(decimalFormat.format(number_clause_multiplier));
+    	number_clause_multiplier = (int)numClausesSlider.getValue();
+    	numClausesText.setText("" + number_clause_multiplier);
     	
-    	if(myAutomaton != null) myAutomaton.setNumClauseMultiplier((float)number_clause_multiplier);   	    	
+    	if(myAutomaton != null) myAutomaton.setNumClause(number_clause_multiplier);   	    	
     }
 
     @FXML
@@ -623,10 +636,10 @@ public class AutomatonMachineController {
     @FXML
     void handleStepsChange() {
     	
-    	threshold_multiplier = clauseThresholdSlider.getValue();
-    	clauseThresholdText.setText(decimalFormat.format(threshold_multiplier));
+    	threshold_multiplier = (int)clauseThresholdSlider.getValue();
+    	clauseThresholdText.setText("" + threshold_multiplier);
     	
-    	if(myAutomaton != null) myAutomaton.setThresholdMultiplier((float)threshold_multiplier); 
+    	if(myAutomaton != null) myAutomaton.setThresholdMultiplier(threshold_multiplier); 
     }
 
     @FXML
@@ -640,20 +653,15 @@ public class AutomatonMachineController {
 
     @FXML
     void handleTraining(ActionEvent event) throws Exception {
-
-
-    	
-    	training_sample_list = new ArrayList<Integer>();
-		for(int i = 0; i < n_samples; i++) training_sample_list.add(i);
-		Collections.shuffle(training_sample_list);
 		
 		training_samples = (int)(split_ratio*n_samples);		
 		test_samples = n_samples - training_samples;
 
+		metrics = new ReferenceMetrics();
+		
 		globalExpController.setNClauses(myAutomaton.getNClauses());
-		isTraining = true;
+		//isTraining = true;
 
-			
 		learnTask = new Task<Void>() {
 	    	
 
@@ -943,7 +951,9 @@ public class AutomatonMachineController {
 				float Q = 1f*count_false_positive/count_false;
 				
 				
-				metrics = new ReferenceMetrics(X, Y, Q, Z);
+				metrics.addMetrics(X, Y, Q, Z);
+				metrics.computeMeans();
+				
 				diagnosticTextFlow.getChildren().clear();
 				
 				//diagnosticTabArea.setText(sb.toString());
@@ -1035,19 +1045,59 @@ public class AutomatonMachineController {
 				label.setFont(Font.font ("Courier New", 20));
 				label.setEffect(new Glow(1.0));
 				diagnosticTextFlow.getChildren().add(label);
-				label = new Text(metrics.getMCC() + "\n");
+				label = new Text(metrics.getMCC() + "\n\n\n");
 				label.setFill(Paint.valueOf(Color.YELLOW.toString()));
 				label.setFont(Font.font ("Courier New", 20));
 				diagnosticTextFlow.getChildren().add(label);
 	            
+				label = new Text("Mean Accuracy: ");
+				label.setFill(Paint.valueOf(Color.LIGHTSKYBLUE.toString()));
+				label.setFont(Font.font ("Courier New", 20));
+				label.setEffect(new Glow(1.0));
+				diagnosticTextFlow.getChildren().add(label);
+				label = new Text(metrics.getMeanAccuracy() + "\n");
+				label.setFill(Paint.valueOf(Color.YELLOW.toString()));
+				label.setFont(Font.font ("Courier New", 20));
+				diagnosticTextFlow.getChildren().add(label);
+				
+				label = new Text("Mean TypeIError: ");
+				label.setFill(Paint.valueOf(Color.LIGHTSKYBLUE.toString()));
+				label.setFont(Font.font ("Courier New", 20));
+				label.setEffect(new Glow(1.0));
+				diagnosticTextFlow.getChildren().add(label);
+				label = new Text(metrics.getMeanTypeI() + "\n");
+				label.setFill(Paint.valueOf(Color.YELLOW.toString()));
+				label.setFont(Font.font ("Courier New", 20));
+				diagnosticTextFlow.getChildren().add(label);
+				
+				label = new Text("Mean TypeIIError: ");
+				label.setFill(Paint.valueOf(Color.LIGHTSKYBLUE.toString()));
+				label.setFont(Font.font ("Courier New", 20));
+				label.setEffect(new Glow(1.0));
+				diagnosticTextFlow.getChildren().add(label);
+				label = new Text(metrics.getMeanTypeII() + "\n");
+				label.setFill(Paint.valueOf(Color.YELLOW.toString()));
+				label.setFont(Font.font ("Courier New", 20));
+				diagnosticTextFlow.getChildren().add(label);
+				
+				label = new Text("Mean F1 Score: ");
+				label.setFill(Paint.valueOf(Color.LIGHTSKYBLUE.toString()));
+				label.setFont(Font.font ("Courier New", 20));
+				label.setEffect(new Glow(1.0));
+				diagnosticTextFlow.getChildren().add(label);
+				label = new Text(metrics.getMeanFI() + "\n");
+				label.setFill(Paint.valueOf(Color.YELLOW.toString()));
+				label.setFont(Font.font ("Courier New", 20));
+				diagnosticTextFlow.getChildren().add(label);
+				
+				
 				double[] perf = new double[] { 
-						                      metrics.getSensitivity(), 
+						                      
 						                      metrics.getSpecificity(),
 						                      metrics.getAccuracy(),
 						                      
 						                      metrics.getF1_score(),
-						                      metrics.getF2_score(),
-						                      metrics.getMCC()};
+						                      };
 				
 				performanceRecord.add(perf);
 						
@@ -1374,7 +1424,7 @@ public class AutomatonMachineController {
 	        	float trans = (float) (.9f*(data[i][2] - min)/(max - min) + .1f);
 	        	
 	        	if(dataInputController.isContinuousEncoder()) {
-	        		myColor = regressionColors[dataInputController.getData().getLabels()[i]%(defaultColors.length-1)];
+	        		myColor = regressionColors[dataInputController.getData().getLabels()[i]%(regressionColors.length-1)];
 	        	}
 	        	else {
 	        		myColor = defaultColors[dataInputController.getData().getLabels()[i]%(defaultColors.length-1)];
