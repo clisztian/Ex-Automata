@@ -575,7 +575,15 @@ public class AutomatonMachineController {
 		label.setFont(Font.font ("Courier", 20));
 		diagnosticTextFlow.getChildren().add(label);
 		
-		
+		label = new Text("Target: ");
+		label.setFill(Paint.valueOf(Color.LIGHTSKYBLUE.toString()));
+		label.setFont(Font.font ("Courier", 20));
+		label.setEffect(new Glow(1.0));
+		diagnosticTextFlow.getChildren().add(label);
+		label = new Text(targ+ "\n");
+		label.setFill(Paint.valueOf(Color.LIGHTGREEN.toString()));
+		label.setFont(Font.font ("Courier", 20));
+		diagnosticTextFlow.getChildren().add(label);
 		
 	}
     
