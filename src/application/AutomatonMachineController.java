@@ -558,10 +558,23 @@ public class AutomatonMachineController {
 			label.setFont(Font.font ("Courier", 20));
 			label.setEffect(new Glow(1.0));
 			diagnosticTextFlow.getChildren().add(label);
-			label = new Text(original[i] + "\n");
-			label.setFill(Paint.valueOf(Color.YELLOW.toString()));
-			label.setFont(Font.font ("Courier", 20));
-			diagnosticTextFlow.getChildren().add(label);
+			
+			if(names[i].contains("_cat")) {
+				
+				label = new Text(dataInputController.getCategoricalValue(i, (int)original[i]) + "\n");
+				label.setFill(Paint.valueOf(Color.YELLOW.toString()));
+				label.setFont(Font.font ("Courier", 20));
+				diagnosticTextFlow.getChildren().add(label);
+				
+			}
+			else {
+				label = new Text(original[i] + "\n");
+				label.setFill(Paint.valueOf(Color.YELLOW.toString()));
+				label.setFont(Font.font ("Courier", 20));
+				diagnosticTextFlow.getChildren().add(label);
+			}
+			
+
 			
 		}
 		

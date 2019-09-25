@@ -301,6 +301,9 @@ public class DataInterfaceController {
 			return problemTypeChoiceBox.getSelectionModel().getSelectedIndex() == 2;
 		}
 
+		public String getCategoricalValue(int feature_num, int c) {
+			return dataInterface.getCategoricalValue(feature_num, c);
+		}
 
 }
 
