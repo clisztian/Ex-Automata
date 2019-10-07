@@ -9,6 +9,7 @@
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.ProgressBar?>
 <?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.RadioMenuItem?>
 <?import javafx.scene.control.Slider?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
@@ -38,11 +39,18 @@
                   <CheckMenuItem fx:id="syntheticCheckbox" mnemonicParsing="false" onAction="#handleSyntheticCheckbox" text="Synthetic Data Generator" />
                </items>
         </Menu>
-        <Menu mnemonicParsing="false" text="Help">
-          <items>
-            <MenuItem mnemonicParsing="false" text="About MyHelloApp" />
-          </items>
-        </Menu>
+            <Menu fx:id="geoColorMenu" mnemonicParsing="false" text="GeograficaStyle">
+              <items>
+                  <RadioMenuItem fx:id="darthColor" mnemonicParsing="false" onAction="#handleChangeMapTheme" text="Darth" />
+                  <RadioMenuItem fx:id="tonerColor" mnemonicParsing="false" onAction="#handleChangeMapTheme" text="Toner" />
+                  <RadioMenuItem fx:id="tonerLiteColor" mnemonicParsing="false" onAction="#handleChangeMapTheme" text="TonerLite" />
+                  <RadioMenuItem fx:id="waterColor" mnemonicParsing="false" onAction="#handleChangeMapTheme" text="WaterColor" />
+                  <RadioMenuItem fx:id="burningColor" mnemonicParsing="false" onAction="#handleChangeMapTheme" text="Burning" />
+                  <RadioMenuItem fx:id="regularColor" mnemonicParsing="false" onAction="#handleChangeMapTheme" text="Regular" />
+                  <RadioMenuItem fx:id="modernColor" mnemonicParsing="false" onAction="#handleChangeMapTheme" text="Modern" />
+                  <RadioMenuItem fx:id="blueColor" mnemonicParsing="false" onAction="#handleChangeMapTheme" text="Blue" />
+              </items>
+            </Menu>
       </menus>
     </MenuBar>
     <AnchorPane maxHeight="-1.0" maxWidth="-1.0" prefHeight="781.0" prefWidth="1139.0" VBox.vgrow="ALWAYS">
@@ -122,6 +130,11 @@
                   <Tab fx:id="syntheticDataTab" text="Synthetica">
                      <content>
                         <StackPane fx:id="syntheticPane" prefHeight="150.0" prefWidth="200.0" />
+                     </content>
+                  </Tab>
+                  <Tab text="Geografica">
+                     <content>
+                        <StackPane fx:id="mapPane" prefHeight="150.0" prefWidth="200.0" />
                      </content>
                   </Tab>
               </tabs>

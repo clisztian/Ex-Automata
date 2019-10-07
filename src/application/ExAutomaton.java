@@ -30,9 +30,8 @@ public class ExAutomaton extends Application {
 	        myController.setSyntheticController();
 	        myController.initiateRadioButtons();
 	        myController.initiateCanvas();
-
-	        
-	        
+	        myController.initializeGeografica();
+ 
 	        primaryStage.show();
 	        
 	

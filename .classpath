@@ -6,5 +6,7 @@
 	<classpathentry kind="con" path="org.eclipse.fx.ide.jdt.core.JAVAFX_CONTAINER"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/TsetlinMachine"/>
 	<classpathentry kind="lib" path="jars/tsne-v2.5.0.jar"/>
+	<classpathentry kind="lib" path="jars/jxmapviewer2-2.4.jar" sourcepath="/home/lisztian/.m2/repository/org/jxmapviewer/jxmapviewer2/2.4/jxmapviewer2-2.4-sources.jar"/>
+	<classpathentry kind="lib" path="jars/commons-logging-1.1.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

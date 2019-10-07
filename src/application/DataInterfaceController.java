@@ -49,7 +49,7 @@ public class DataInterfaceController {
 		problemTypeChoiceBox.getItems().addAll(formats);
 		problemTypeChoiceBox.getSelectionModel().selectFirst();
 		
-		
+		resolutionSlider.setDisable(false);
 		
 	}
 	
@@ -89,9 +89,18 @@ public class DataInterfaceController {
 	    @FXML
 	    private CheckBox categoryCheckBox;
 	    
+	    @FXML
+	    private Slider resolutionSlider;
+	    
+	    @FXML
+	    private TextField resolutionText;
+	    
 	    private Window primaryStage;
 	    
-		private int resolution = 70;
+	    
+	    
+	    
+		private int resolution = 50;
 		private String[] class_names;
 	   
 
@@ -138,7 +147,7 @@ public class DataInterfaceController {
 	    		else {
 	    			
 	    			feature_names = dataInterface.setFeatureNames();
-		    		data = dataInterface.getTwoClassData(feature_names, ""); 	
+		    		data = dataInterface.getMixedData(feature_names, ""); 	
 		    		
 		    		List<Integer> listclass = dataInterface.getMy_classes();
 		    		class_names = new String[listclass.size()];
@@ -155,6 +164,14 @@ public class DataInterfaceController {
 	    	}
 	    }
 
+	    
+	    @FXML
+	    void handleResolutionChange() {
+	    	
+	    	resolution = (int)resolutionSlider.getValue();
+	    	resolutionText.setText("" + resolution);
+	    }
+	    
 	    @FXML
 	    void handleFileOpen(ActionEvent event) throws FileNotFoundException {
 
@@ -236,7 +253,7 @@ public class DataInterfaceController {
 	    			data = dataInterface.getContinuousMixedData(feature_names, resolution);
 		    	}
 		    	else {
-		    		data = dataInterface.getTwoClassData(feature_names, ""); 	
+		    		data = dataInterface.getMixedData(feature_names, ""); 	
 		    	}
 		    	
 	    		bin = new Binarizer(bit_size);		
@@ -293,7 +310,7 @@ public class DataInterfaceController {
 
 
 		public int getTargetResolution() {
-			return dataInterface.getTargetResolution();
+			return (int)resolutionSlider.getValue();
 		}
 
 

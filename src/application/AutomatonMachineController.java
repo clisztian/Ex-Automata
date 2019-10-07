@@ -11,6 +11,7 @@ import java.util.Random;
 import automaton.AutomatonLearningMachine;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
+import javafx.embed.swing.SwingNode;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -25,8 +26,10 @@ import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.Label;
+import javafx.scene.control.Menu;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.RadioButton;
+import javafx.scene.control.RadioMenuItem;
 import javafx.scene.control.Slider;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -34,6 +37,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.effect.Glow;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
@@ -42,6 +46,7 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import jxmaps.JXMapViewerTab;
 import tools.ReferenceMetrics;
 
 public class AutomatonMachineController {
@@ -53,6 +58,7 @@ public class AutomatonMachineController {
 	private TSNEController tsneController;
 	private SyntheticController syntheticController;
 
+	private JXMapViewerTab jxMap;
 	private ReferenceMetrics metrics;
     private int number_clause_multiplier = 300;
     private double learn_rate = 100f;
@@ -79,7 +85,30 @@ public class AutomatonMachineController {
 	private Stage syntheticWindow = new Stage();
 	private Scene syntheticScene;
 
+	private SwingNode swingNode;
 
+    @FXML
+    private Menu geoColorMenu;
+	
+	@FXML
+    private RadioMenuItem darthColor;
+    @FXML
+    private RadioMenuItem tonerColor;
+    @FXML
+    private RadioMenuItem tonerLiteColor;
+    @FXML
+    private RadioMenuItem waterColor;
+    @FXML
+    private RadioMenuItem burningColor;
+    @FXML
+    private RadioMenuItem regularColor;
+    @FXML
+    private RadioMenuItem modernColor;
+    @FXML
+    private RadioMenuItem blueColor;
+	
+	
+	
     @FXML
     private Label smoothnessLabel31;
 
@@ -201,11 +230,14 @@ public class AutomatonMachineController {
     @FXML
     private CheckBox boostCheck;
     
+    @FXML
+    private StackPane mapPane;
+    
     
 //    @FXML
 //    private StackPane syntheticPane;
     
-    ToggleGroup group;
+    ToggleGroup group,colorTheme;
     
 	private double number_states_multiplier = 1.0;
 
@@ -242,6 +274,9 @@ public class AutomatonMachineController {
 			Color.MEDIUMORCHID, Color.OLIVEDRAB, Color.ORANGERED, Color.ROYALBLUE, Color.SEAGREEN, Color.TEAL};
 	private double syntheticPaneHeight;
 	private double syntheticPaneWidth;
+	private String myMapStyle;
+	private String[] mapnames;
+	private int mapindex = 0;
 	
 	
 	public void initiateRadioButtons() {
@@ -252,6 +287,30 @@ public class AutomatonMachineController {
 		predictionMode.setToggleGroup(group);
 		
 		rng = new Random();
+		
+		
+		colorTheme = new ToggleGroup();
+		darthColor.setToggleGroup(colorTheme);
+		darthColor.setSelected(true);
+		
+		tonerColor.setToggleGroup(colorTheme);
+		tonerLiteColor.setToggleGroup(colorTheme);
+		waterColor.setToggleGroup(colorTheme);
+		burningColor.setToggleGroup(colorTheme);
+		regularColor.setToggleGroup(colorTheme);
+		modernColor.setToggleGroup(colorTheme);
+		blueColor.setToggleGroup(colorTheme);
+
+		mapnames = new String[]{"http://a.tile.stamen.com/toner", 
+		"http://a.tile.stamen.com/toner-hybrid", 
+		"http://a.tile.stamen.com/toner-lite",
+		"http://b.tile.stamen.com/watercolor",
+		"http://a.tile.stamen.com/terrain",
+		"http://a.tile.stamen.com/mars",
+		"https://a.tile.openstreetmap.org",
+		"https://cartodb-basemaps-a.global.ssl.fastly.net/dark_all"};
+		
+		
 	}
 	
 	
@@ -407,8 +466,11 @@ public class AutomatonMachineController {
 			
 			localExpController.sketchCanvas();
 			
-			if(regression || encodeContinuous) {
+			if(encodeContinuous) {
 				printRegressionSample(myAutomaton.getOriginalData().getSample(rand_samp), dataInputController.decodeClass(pred_class), myAutomaton.getRegTargets()[rand_samp]);
+			}
+			else if(regression) {
+				printRegressionSample(myAutomaton.getOriginalData().getSample(rand_samp), pred_class, myAutomaton.getRegTargets()[rand_samp]);
 			}
 			else {
 				printSample(myAutomaton.getOriginalData().getSample(rand_samp), pred_class, myAutomaton.getTargets()[rand_samp]);
@@ -447,9 +509,12 @@ public class AutomatonMachineController {
     		syntheticController.updateSyntheticCanvas();
     		
     		
-    		if(regression || encodeContinuous) {
+    		if(encodeContinuous) {
     			printRegressionSample(myAutomaton.getOriginalData().getSample(rand_samp), dataInputController.decodeClass(pred_class), myAutomaton.getRegTargets()[rand_samp]);
     		}
+    		else if(regression) {
+				printRegressionSample(myAutomaton.getOriginalData().getSample(rand_samp), pred_class, myAutomaton.getRegTargets()[rand_samp]);
+			}
     		else {
     			printSample(myAutomaton.getOriginalData().getSample(rand_samp), pred_class, myAutomaton.getTargets()[rand_samp]);
     		}
@@ -468,8 +533,11 @@ public class AutomatonMachineController {
 				
 		localExpController.sketchCanvas();
 		
-		if(regression || encodeContinuous) {
+		if(encodeContinuous) {
 			printRegressionSample(localSynthetic[0], dataInputController.decodeClass(pred_class), -1);
+		}
+		else if(regression) {
+			printRegressionSample(localSynthetic[0], pred_class, -1);
 		}
 		else {
 			printSample(localSynthetic[0], pred_class, -1);
@@ -511,10 +579,24 @@ public class AutomatonMachineController {
 			label.setFont(Font.font ("Courier", 20));
 			label.setEffect(new Glow(1.0));
 			diagnosticTextFlow.getChildren().add(label);
-			label = new Text(original[i] + "\n");
-			label.setFill(Paint.valueOf(Color.YELLOW.toString()));
-			label.setFont(Font.font ("Courier", 20));
-			diagnosticTextFlow.getChildren().add(label);
+			
+			if(names[i].contains("_")) {
+				
+				label = new Text(dataInputController.getCategoricalValue(i, (int)original[i]) + "\n");
+				label.setFill(Paint.valueOf(Color.YELLOW.toString()));
+				label.setFont(Font.font ("Courier", 20));
+				diagnosticTextFlow.getChildren().add(label);
+				
+			}
+			else {
+				
+				label = new Text(original[i] + "\n");
+				label.setFill(Paint.valueOf(Color.YELLOW.toString()));
+				label.setFont(Font.font ("Courier", 20));
+				diagnosticTextFlow.getChildren().add(label);
+			}
+			
+
 			
 		}
 		
@@ -559,7 +641,7 @@ public class AutomatonMachineController {
 			label.setEffect(new Glow(1.0));
 			diagnosticTextFlow.getChildren().add(label);
 			
-			if(names[i].contains("_cat")) {
+			if(names[i].contains("_")) {
 				
 				label = new Text(dataInputController.getCategoricalValue(i, (int)original[i]) + "\n");
 				label.setFill(Paint.valueOf(Color.YELLOW.toString()));
@@ -1148,7 +1230,7 @@ public class AutomatonMachineController {
 
 				   if(regression) {
 					   prediction = myAutomaton.predict_regression(myAutomaton.getTransformedData()[rand_samp]);
-					   target = myAutomaton.getRegTargets()[rand_samp];			   
+					   target = myAutomaton.getRegTargets()[rand_samp];
 				   }
 				   else {
 					   prediction = dataInputController.decodeClass(myAutomaton.predict(myAutomaton.getTransformedData()[rand_samp]));
@@ -1181,7 +1263,52 @@ public class AutomatonMachineController {
 	}
     
 
+    public void initializeGeografica() {
+    	
+    	swingNode = new SwingNode();  
+    	jxMap = new JXMapViewerTab();
+    	
+    	jxMap.initializeMap(swingNode, mapnames[0]);  	
+    	mapPane.getChildren().add(swingNode);
     
+    	addGeographicalObservation(46.94, 7.44, Color.LIGHTPINK, "Bern Explainability");
+    	addGeographicalObservation(46.20, 6.14, Color.DARKCYAN, "Geneva Explainability");
+    	repaintMap();
+    }
+    
+    
+    @FXML
+    void handleChangeMapTheme(ActionEvent event) {
+
+    	mapindex = 0;
+    	String myevent = event.toString();
+
+    	if(myevent.contains("darthColor"))  mapindex = 0;
+    	else if(myevent.contains("tonerColor"))  mapindex = 1;
+    	else if(myevent.contains("tonerLiteColor"))  mapindex = 2;
+    	else if(myevent.contains("waterColor"))  mapindex = 3;
+    	else if(myevent.contains("burningColor"))  mapindex = 4;
+    	else if(myevent.contains("regularColor"))  mapindex = 5;
+    	else if(myevent.contains("modernColor"))  mapindex = 6;
+    	else if(myevent.contains("blueColor"))  mapindex = 7;
+    	
+    	jxMap.initializeMap(swingNode, mapnames[mapindex]);   	
+    	mapPane.getChildren().set(0,swingNode);
+    	
+    	repaintMap();
+    	
+    }
+    
+    void addGeographicalObservation(double lat, double longi, Color col, String text) {
+    	
+    	jxMap.addGeoPosition(lat, longi, new java.awt.Color((float)col.getRed(), (float)col.getGreen(), (float)col.getBlue()), text);  	
+    }
+    
+    void repaintMap() {
+    	
+    	jxMap.createSwingContent(swingNode);
+    	mapPane.getChildren().set(0,swingNode);
+    }
     
     @FXML
     void stopLearningButton(ActionEvent event) {
@@ -1330,6 +1457,10 @@ public class AutomatonMachineController {
 		
 	}
     
+    
+    
+    
+    
     @FXML
     void handleSyntheticCheckbox(ActionEvent event) {
 
@@ -1446,6 +1577,14 @@ public class AutomatonMachineController {
 	        	
 	        	if(dataInputController.isContinuousEncoder()) {
 	        		myColor = regressionColors[dataInputController.getData().getLabels()[i]%(regressionColors.length-1)];
+	        	}
+	        	else if(dataInputController.isRegression()) {
+	        		
+	        		float indicator = (dataInputController.getData().getRegLabels()[i] - dataInputController.getData().getTarget_min())/
+	        		(dataInputController.getData().getTarget_max() - dataInputController.getData().getTarget_min());
+	        		
+	        		int whichColor = (int)(indicator*((float)(regressionColors.length-1)));
+	        		myColor = regressionColors[whichColor];
 	        	}
 	        	else {
 	        		myColor = defaultColors[dataInputController.getData().getLabels()[i]%(defaultColors.length-1)];
