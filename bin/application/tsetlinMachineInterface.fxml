@@ -134,7 +134,10 @@
                   </Tab>
                   <Tab text="Geografica">
                      <content>
-                        <StackPane fx:id="mapPane" prefHeight="150.0" prefWidth="200.0" />
+                        <StackPane fx:id="mapPane" prefHeight="150.0" prefWidth="200.0">
+                           <children>
+                              <StackPane fx:id="infoGeoPanel" layoutX="10.0" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="300.0" prefWidth="250.0" />
+                           </children></StackPane>
                      </content>
                   </Tab>
               </tabs>

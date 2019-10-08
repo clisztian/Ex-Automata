@@ -16,6 +16,8 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.chart.CategoryAxis;
@@ -277,6 +279,7 @@ public class AutomatonMachineController {
 	private String myMapStyle;
 	private String[] mapnames;
 	private int mapindex = 0;
+	private StackPane glass;
 	
 	
 	public void initiateRadioButtons() {
@@ -476,6 +479,8 @@ public class AutomatonMachineController {
 				printSample(myAutomaton.getOriginalData().getSample(rand_samp), pred_class, myAutomaton.getTargets()[rand_samp]);
 			}
 			
+			
+			
 		}
     	
     }
@@ -632,6 +637,7 @@ public class AutomatonMachineController {
 		diagnosticTextFlow.getChildren().add(label);
 
 		String[] names = globalExpController.getFeature_names();
+		String locationName = null;
 		
 		for(int i = 0; i < names.length; i++) {
 			
@@ -650,14 +656,16 @@ public class AutomatonMachineController {
 				
 			}
 			else {
+				
 				label = new Text(original[i] + "\n");
 				label.setFill(Paint.valueOf(Color.YELLOW.toString()));
 				label.setFont(Font.font ("Courier", 20));
 				diagnosticTextFlow.getChildren().add(label);
 			}
 			
-
-			
+			if(names[i].contains("City") || names[i].contains("Location")) {
+				locationName = dataInputController.getCategoricalValue(i, (int)original[i]);
+			}
 		}
 		
 		label = new Text("Prediction: ");
@@ -680,6 +688,60 @@ public class AutomatonMachineController {
 		label.setFont(Font.font ("Courier", 20));
 		diagnosticTextFlow.getChildren().add(label);
 		
+		//Identified location in categorical data
+		if(locationName != null) {
+			
+			double lat = 47.3769;
+			double longi = 8.5417;
+			StringBuilder sb = new StringBuilder();
+			
+			glass.getChildren().clear();
+	        for (Node node : diagnosticTextFlow.getChildren()) {
+	            if (node instanceof Text) {
+			
+	            	String mynext = ((Text) node).getText();
+	            	sb.append(" " + mynext);
+	            	//if(!mynext.contains(":")) sb.append("\n");
+
+	            }
+	        }
+			
+	        
+	        final Label mylabel = new Label(sb.toString());
+        	mylabel.setStyle("-fx-text-fill: cyan; -fx-font: 14 \"courier\"; -fx-padding: 0 0 20 0; -fx-text-alignment: left");
+        	mylabel.setEffect(new Glow(.7));
+        	StackPane.setAlignment(mylabel, Pos.TOP_LEFT);
+            glass.getChildren().addAll(mylabel);             	        
+	        
+            
+            String fullText =  names[rng.nextInt(names.length)];        
+	        while(fullText.contains("City")) {
+	        	fullText = names[rng.nextInt(names.length)];
+	        }
+	        
+	        float indicator = (targ - dataInputController.getData().getTarget_min())/
+	        		(dataInputController.getData().getTarget_max() - dataInputController.getData().getTarget_min());
+	        		
+	        int whichColor = (int)(indicator*((float)(regressionColors.length-1)));
+	        Color myColor = regressionColors[whichColor];
+			
+			if(locationName.contains("Zurich")) {
+				
+				lat = 47.3769 + rng.nextGaussian()*.1; 
+				longi = 8.5417 + rng.nextGaussian()*.1;
+			}
+			else if(locationName.contains("Bern")) {
+				lat = 46.9480 + rng.nextGaussian()*.1; 
+				longi = 7.4474 + rng.nextGaussian()*.1;
+			}
+			else if(locationName.contains("Geneva")) {
+				lat = 46.2044 + rng.nextGaussian()*.1; 
+				longi = 6.1432 + rng.nextGaussian()*.1;
+			}
+				
+			addGeographicalObservation(lat, longi, myColor, sb.toString());
+		}			
+		repaintMap();
 	}
     
 
@@ -771,8 +833,6 @@ public class AutomatonMachineController {
 			@Override
 			protected Void call() throws Exception {
 				
-		
-			
 		    int count = 0;
 		    
 			for(int n = 0; n < n_training_rounds; n++) {			
@@ -1269,10 +1329,19 @@ public class AutomatonMachineController {
     	jxMap = new JXMapViewerTab();
     	
     	jxMap.initializeMap(swingNode, mapnames[0]);  	
-    	mapPane.getChildren().add(swingNode);
+    	//mapPane.getChildren().add(swingNode);
+    	
+    	glass = new StackPane();
+        //StackPane.setAlignment(label, Pos.BOTTOM_CENTER);
+        //glass.getChildren().addAll(label);
+        glass.setStyle("-fx-background-color: rgba(0, 100, 100, 0.3); -fx-background-radius: 10;");
+        glass.setMaxWidth(250);
+        glass.setMaxHeight(300);
+        StackPane.setAlignment(glass, Pos.TOP_LEFT);
+//        mapPane.getChildren().add(swingNode);
+//        mapPane.getChildren().add(glass);
+    	
     
-    	addGeographicalObservation(46.94, 7.44, Color.LIGHTPINK, "Bern Explainability");
-    	addGeographicalObservation(46.20, 6.14, Color.DARKCYAN, "Geneva Explainability");
     	repaintMap();
     }
     
@@ -1293,7 +1362,8 @@ public class AutomatonMachineController {
     	else if(myevent.contains("blueColor"))  mapindex = 7;
     	
     	jxMap.initializeMap(swingNode, mapnames[mapindex]);   	
-    	mapPane.getChildren().set(0,swingNode);
+//    	mapPane.getChildren().clear();
+//    	mapPane.getChildren().addAll(swingNode,glass);
     	
     	repaintMap();
     	
@@ -1306,8 +1376,10 @@ public class AutomatonMachineController {
     
     void repaintMap() {
     	
+    	mapPane.getChildren().clear();
+    	mapPane.getChildren().add(swingNode);
+    	mapPane.getChildren().add(glass);
     	jxMap.createSwingContent(swingNode);
-    	mapPane.getChildren().set(0,swingNode);
     }
     
     @FXML

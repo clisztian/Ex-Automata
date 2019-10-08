@@ -23,6 +23,10 @@ import org.jxmapviewer.viewer.Waypoint;
 import org.jxmapviewer.viewer.WaypointPainter;
 
 import javafx.embed.swing.SwingNode;
+import javafx.geometry.Pos;
+import javafx.scene.control.Label;
+import javafx.scene.effect.Glow;
+import javafx.scene.layout.StackPane;
 
 
 
@@ -42,10 +46,13 @@ public class JXMapViewerTab {
     	SwingUtilities.invokeLater(() -> {
             
         	jXMapKit = new JXMapKit();
+        	jXMapKit.setZoomSliderVisible(false);
+        	jXMapKit.setZoomButtonsVisible(false);
+        	
             TileFactoryInfo info = new OSMTileFactoryInfo("OpenStreetMap", mapstyle);
             
             tileFactory = new DefaultTileFactory(info);
-            tileFactory.setThreadPoolSize(8);
+            tileFactory.setThreadPoolSize(12);
             jXMapKit.setTileFactory(tileFactory);
 
             GeoPosition gp = new GeoPosition(47.37, 8.54);     
@@ -92,11 +99,6 @@ public class JXMapViewerTab {
         	jXMapKit.getMainMap().setOverlayPainter(myPainter);            
             jXMapKit.setZoom(11);
             
-            for (MyWaypoint waypoint : waypoints) {
-            	waypoint.getToolTip().setComponent(jXMapKit.getMainMap());
-            	jXMapKit.getMainMap().add(waypoint.getToolTip());
-            }
-
 
             jXMapKit.getMainMap().addMouseMotionListener(new MouseMotionListener() {
                 @Override
@@ -120,16 +122,18 @@ public class JXMapViewerTab {
 
                         if (converted_gp_pt.distance(me.getPoint()) < 10) {
                             
-                            waypoint.getToolTip().setLocation(converted_gp_pt);
-                            waypoint.getToolTip().setVisible(true);
+//                        	final Label mylabel = new Label(waypoint.getMyInfo());
+//                        	mylabel.setStyle("-fx-text-fill: cyan; -fx-font: 14 \"courier\"; -fx-padding: 0 0 20 0; -fx-text-alignment: left");
+//                        	mylabel.setEffect(new Glow(.7));
+//                        	StackPane.setAlignment(mylabel, Pos.TOP_LEFT);
+//                            glass.getChildren().addAll(mylabel);             
+                        	
+
                         } else {
-                        	waypoint.getToolTip().setVisible(false);
+                        	
                         }
                     }
-
-                }
-                
-               
+                }  
             });
 
             swingNode.setContent(jXMapKit);

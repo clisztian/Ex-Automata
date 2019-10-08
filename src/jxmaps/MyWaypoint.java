@@ -12,16 +12,14 @@ class MyWaypoint implements Waypoint {
 	private Color mypaint;
 	private GeoPosition myPosition;
 	private String myInfo;
-	private JToolTip myTip;
+
 	
 	public MyWaypoint(Color mypaint, GeoPosition myPosition, String info) {
 		
 		this.mypaint = mypaint;
 		this.myPosition = myPosition;
 		this.myInfo = info;
-		
-		this.myTip = new JToolTip();
-		this.myTip.setTipText(info);
+
 	}
 	
 	@Override
@@ -45,8 +43,6 @@ class MyWaypoint implements Waypoint {
 		this.myInfo = myInfo;
 	}
 	
-	public JToolTip getToolTip() {
-		return myTip;
-	}
+
 	
 }
