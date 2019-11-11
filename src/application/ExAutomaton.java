@@ -5,7 +5,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.stage.Stage;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.layout.BorderPane;
 
 
 public class ExAutomaton extends Application {
@@ -27,6 +26,7 @@ public class ExAutomaton extends Application {
 	        myController.setGlobalExpController();
 	        myController.setLocalExpController();
 	        myController.setTsneController();
+	        myController.setHiddenStateController();
 	        myController.setSyntheticController();
 	        myController.initiateRadioButtons();
 	        myController.initiateCanvas();

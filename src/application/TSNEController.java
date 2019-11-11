@@ -70,6 +70,8 @@ public class TSNEController {
     DecimalFormat df = new DecimalFormat();
 	private Window primaryStage;
 	private AutomatonMachineController myAutomaton;
+	private double[] mins;
+	private double[] maxs;
 	
 	
 	public void setAutomatonController(AutomatonMachineController cont) {
@@ -147,6 +149,8 @@ public class TSNEController {
     		t_sneOutput = tsne.tsne(config);
 
     		long t2 = System.currentTimeMillis();
+    		
+    		findExtremes();
     		sketchCanvas();
     	}
     	
@@ -161,7 +165,40 @@ public class TSNEController {
 		
 	}
     
+	
+	public void findExtremes() {
+		
+		mins = new double[3];
+		maxs = new double[3];
+		
+		for(int i = 0; i < 3; i++) {
+			mins[i] = Double.MAX_VALUE;
+			maxs[i] = -Double.MAX_VALUE;
+		}
+		
+		for(int i = 0; i < t_sneOutput.length; i++) {
+			
+			for(int j = 0; j < 3; j++) {
+				
+				if(t_sneOutput[i][j] > maxs[j]) {
+					maxs[j] = t_sneOutput[i][j];
+				}
+				else if(t_sneOutput[i][j] < mins[j]) {
+					mins[j] = t_sneOutput[i][j];
+				}
+			}	
+		}
+		
+	}
+	
+	double[] getMins() {
+		return mins;
+	}
     
+	double[] getMaxs() {
+		return maxs;
+	}
+	
 	public void setStage(Stage primaryStage) {
 		this.primaryStage = primaryStage;
 	}

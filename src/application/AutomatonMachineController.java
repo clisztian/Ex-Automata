@@ -59,7 +59,8 @@ public class AutomatonMachineController {
 	private DataInterfaceController dataInputController;
 	private TSNEController tsneController;
 	private SyntheticController syntheticController;
-
+	private HiddenStateCanvas hiddenStateController;
+	
 	private JXMapViewerTab jxMap;
 	private ReferenceMetrics metrics;
     private int number_clause_multiplier = 300;
@@ -86,6 +87,9 @@ public class AutomatonMachineController {
 	
 	private Stage syntheticWindow = new Stage();
 	private Scene syntheticScene;
+	
+	private Stage hiddenStateWindow = new Stage();
+	private Scene hiddenStateScene;
 
 	private SwingNode swingNode;
 
@@ -280,6 +284,7 @@ public class AutomatonMachineController {
 	private String[] mapnames;
 	private int mapindex = 0;
 	private StackPane glass;
+	private Color[] tsneColors;
 	
 	
 	public void initiateRadioButtons() {
@@ -1529,7 +1534,27 @@ public class AutomatonMachineController {
 		
 	}
     
-    
+	public void setHiddenStateController() throws IOException {
+		
+		FXMLLoader loader = new FXMLLoader(getClass().getResource("hiddenState3DPanel.fxml"));
+		Parent root = (Parent)loader.load();
+		hiddenStateController = loader.getController();
+		
+		hiddenStateScene = new Scene(root);
+		hiddenStateScene.getStylesheets().add("css/WhiteOnBlack.css");
+		
+		hiddenStateWindow = new Stage();
+		hiddenStateWindow.setScene(hiddenStateScene);
+		hiddenStateWindow.setX(primaryStage.getX() + 250);
+		hiddenStateWindow.setY(primaryStage.getY() + 100);
+		hiddenStateWindow.setTitle("3DtSNE");
+			
+		hiddenStateController.createHiddenState(hiddenStateScene);	
+	}
+	
+	public void show3DTsne() {
+		hiddenStateWindow.show();
+	}
     
     
     
@@ -1611,6 +1636,10 @@ public class AutomatonMachineController {
 	}
 
 	
+	public void create3DTsneChart(double[][] data, double[] mins, double[] maxs, Color[] colors) {
+		
+		hiddenStateController.updateGrid(data, mins, maxs, colors);	
+	}
 
 
     public ScatterChart createScatterChart(double[][] data) throws ParseException {
@@ -1641,6 +1670,8 @@ public class AutomatonMachineController {
 	
 	        XYChart.Series pin = new XYChart.Series();
   
+	        tsneColors = new Color[data.length];
+	        
 	        for(int i = 0; i < data.length; i++) {
 	        	
 	        	final XYChart.Data<Number, Number> dataXY = new XYChart.Data(data[i][0], data[i][1]);
@@ -1660,7 +1691,10 @@ public class AutomatonMachineController {
 	        	}
 	        	else {
 	        		myColor = defaultColors[dataInputController.getData().getLabels()[i]%(defaultColors.length-1)];
+	        		System.out.println(dataInputController.getData().getLabels()[i] + " " + myColor.toString());
 	        	}
+	        	
+	        	tsneColors[i] = myColor;
 	        	
 	        	
 	        	String rgb = String.format("%d, %d, %d",
@@ -1676,6 +1710,9 @@ public class AutomatonMachineController {
 	        
 	    }
 		
+	    
+	    create3DTsneChart(data, tsneController.getMins(), tsneController.getMaxs(), tsneColors);
+	    show3DTsne();
 	    
 		return sc;
     }
