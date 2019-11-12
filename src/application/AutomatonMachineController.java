@@ -261,9 +261,11 @@ public class AutomatonMachineController {
 		
 	Thread learnThread;
 	Thread playThread;
-
+	Thread spinThread;
 	Task<Void> playtask;
 	Task<Void> learnTask;
+	Task<Void> spinTask;
+	
 	private int training_samples;
 	private int test_samples;
 	private String[] diagnosticName;
@@ -285,6 +287,8 @@ public class AutomatonMachineController {
 	private int mapindex = 0;
 	private StackPane glass;
 	private Color[] tsneColors;
+	
+	
 	
 	
 	public void initiateRadioButtons() {
@@ -1553,7 +1557,25 @@ public class AutomatonMachineController {
 	}
 	
 	public void show3DTsne() {
+		
 		hiddenStateWindow.show();
+		
+//		spinTask = new Task<Void>() {
+//            
+//            @Override
+//            protected Void call() throws Exception {
+//            	
+//            	
+//            	
+//            	Platform.runLater(hiddenStateController);
+//				return null;
+//            }
+//		
+//		};
+//				
+//		spinThread = new Thread(spinTask, "learn-thread");
+//		spinThread.setDaemon(true);
+//		spinThread.start();
 	}
     
     

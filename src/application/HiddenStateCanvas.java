@@ -1,6 +1,9 @@
 package application;
 
 import java.io.Serializable;
+
+import javafx.animation.Animation;
+import javafx.animation.RotateTransition;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Group;
@@ -13,8 +16,9 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Sphere;
 import javafx.scene.transform.Rotate;
+import javafx.util.Duration;
 
-public class HiddenStateCanvas { // implements Runnable {
+public class HiddenStateCanvas { //implements Runnable {
 
     // variables for mouse interaction
     private double mousePosX, mousePosY;
@@ -26,6 +30,8 @@ public class HiddenStateCanvas { // implements Runnable {
 	private int myLayerNumber = 0;
     private boolean pianoMode = false;
     private Color[] colors;
+    RotateTransition rt;
+    
 	public HiddenStateCanvas() {}
 
 	@FXML
@@ -73,8 +79,20 @@ public class HiddenStateCanvas { // implements Runnable {
 
 	    makeZoomable(hiddenStatePane);
 
-	
+	    rt = new RotateTransition(Duration.millis(8000), grid);
+	    rt.setAxis(Rotate.Y_AXIS);  
+	    rt.setByAngle(360);
+	    rt.setCycleCount(Animation.INDEFINITE);
+	    rt.setAutoReverse(true);	 
+	    rt.play();
+		
 	}
+	
+	public void rotateMe() {
+		rotateY.setAngle(rotateY.getAngle() + 1);
+		
+	}
+	
 	
 	
 	public void updateGrid(double[][] hidden, double[] mins, double[] maxs, Color[] colors) {
@@ -120,6 +138,13 @@ public class HiddenStateCanvas { // implements Runnable {
         }
 		          
         hiddenStatePane.getChildren().set(0,grid);
+        
+        rt = new RotateTransition(Duration.millis(8000), grid);
+        rt.setAxis(Rotate.Y_AXIS);  
+	    rt.setByAngle(360);
+	    rt.setCycleCount(Animation.INDEFINITE);
+	    rt.setAutoReverse(true);
+	    rt.play();
 	}
 	
 
@@ -188,7 +213,7 @@ public class HiddenStateCanvas { // implements Runnable {
 
 //	@Override
 //	public void run() {
-//		updateGrid();
+//		rotateMe();
 //	}
 
 
