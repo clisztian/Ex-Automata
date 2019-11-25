@@ -12,6 +12,7 @@ import com.jujutsu.utils.TSneUtils;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.chart.ScatterChart;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
@@ -158,11 +159,12 @@ public class TSNEController {
     }
 
 
-	private void sketchCanvas() throws ParseException {
-		
+	private void sketchCanvas() throws ParseException {		
 		tsneCanvas.getChildren().set(0,myAutomaton.createScatterChart(t_sneOutput));
-
-		
+	}
+	
+	public  void updateCanvas(ScatterChart sc) {
+		tsneCanvas.getChildren().set(0,sc);
 	}
     
 	

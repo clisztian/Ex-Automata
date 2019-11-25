@@ -1,6 +1,7 @@
 package application;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 
 import javafx.animation.Animation;
 import javafx.animation.RotateTransition;
@@ -31,18 +32,41 @@ public class HiddenStateCanvas { //implements Runnable {
     private boolean pianoMode = false;
     private Color[] colors;
     RotateTransition rt;
-    
-	public HiddenStateCanvas() {}
+    private ArrayList<double[]> realtime;
+    private ArrayList<Color> realtimeColors;
+	private double[] mins;
+	private double[] maxs;
+	
+	
+	public HiddenStateCanvas() {
+		realtime = new ArrayList<double[]>();
+		realtimeColors = new ArrayList<Color>();
+	}
 
 	@FXML
 	private StackPane hiddenStatePane;
 	
-	private double[] mins;
-	private double[] maxs;
+
 	
 	public void setGraphSize(int graphSize) {
 	}
 
+	
+	public void setObservations(double[][] hidden, Color[] colors) {
+		
+		realtime.clear();
+		realtimeColors.clear();
+		
+		for(int i = 0; i < hidden.length; i++) {
+			realtime.add(hidden[i]);
+			realtimeColors.add(colors[i]);
+		}
+	}
+	
+	public void addObservation(double[] hidden, Color color) {
+		realtime.add(hidden);
+		realtimeColors.add(color);
+	}
 	
 	public void sketchCanvas() {
 		
@@ -99,7 +123,12 @@ public class HiddenStateCanvas { //implements Runnable {
 		
 		grid = new Group();
 		grid.getTransforms().addAll(rotateX, rotateY);
+		setObservations(hidden,colors);
+		this.mins = mins;
+		this.maxs = maxs;
+		this.colors = colors;
 
+		
 		double yjump = maxs[1] - mins[1];
 		double zjump = maxs[2] - mins[2];
 		double xjump = maxs[0] - mins[0];
@@ -149,6 +178,58 @@ public class HiddenStateCanvas { //implements Runnable {
 	
 
 
+	public void updateGrid(double[] hidden, Color color) {
+		
+//		grid = new Group();
+//		grid.getTransforms().addAll(rotateX, rotateY);
+
+		addObservation(hidden, color);
+		
+		double yjump = maxs[1] - mins[1];
+		double zjump = maxs[2] - mins[2];
+		double xjump = maxs[0] - mins[0];
+		
+		//for (int i = 0; i < realtime.size(); i++) {
+        	    
+        	double[] vals = hidden;            
+            Sphere sphere = new Sphere(5f); 
+
+            // color
+            PhongMaterial mat = new PhongMaterial();
+            mat.setDiffuseColor(color);
+            mat.setSpecularColor(Color.WHITE);
+            sphere.setMaterial(mat);
+            
+            
+            PointLight pointlight = new PointLight(color); 
+     
+            // location
+            
+            double yloc = 400.0*(vals[1] - mins[1])/yjump - 200;
+            double xloc = 400.0*(vals[0] - mins[0])/xjump - 200;
+            double zloc = 400.0*(vals[2] - mins[2])/zjump - 200;
+
+            sphere.setLayoutY(yloc);
+            sphere.setTranslateX(xloc);
+            sphere.setTranslateZ(zloc);
+                   
+            pointlight.setTranslateZ(zloc); 
+            pointlight.setTranslateX(xloc); 
+            pointlight.setLayoutY(yloc); 
+            
+            
+            grid.getChildren().addAll(sphere,pointlight);
+        //}
+		          
+        //hiddenStatePane.getChildren().set(0,grid);
+        
+//        rt = new RotateTransition(Duration.millis(8000), grid);
+//        rt.setAxis(Rotate.Y_AXIS);  
+//	    rt.setByAngle(360);
+//	    rt.setCycleCount(Animation.INDEFINITE);
+//	    rt.setAutoReverse(true);
+//	    rt.play();
+	}
 	
 	
 	

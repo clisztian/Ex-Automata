@@ -58,9 +58,10 @@ public class AutomatonMachineController {
 	private LocalExplainabilityController localExpController;
 	private DataInterfaceController dataInputController;
 	private TSNEController tsneController;
+	private XYChart.Series pin;
 	private SyntheticController syntheticController;
 	private HiddenStateCanvas hiddenStateController;
-	
+	private ScatterChart<Number,Number> sc;
 	private JXMapViewerTab jxMap;
 	private ReferenceMetrics metrics;
     private int number_clause_multiplier = 300;
@@ -277,7 +278,7 @@ public class AutomatonMachineController {
 	
 	Color[] regressionColors = null;
 	
-	Color[] defaultColors = new Color[] {Color.CORNFLOWERBLUE, Color.CRIMSON, Color.LIGHTPINK, Color.ALICEBLUE, Color.BLUEVIOLET, Color.DARKCYAN, 
+	Color[] defaultColors = new Color[] {Color.RED, Color.GREEN,  Color.CORNFLOWERBLUE, Color.LIME, Color.LIGHTGREEN, Color.CRIMSON, Color.LIGHTPINK, Color.ALICEBLUE, Color.BLUEVIOLET, Color.DARKCYAN, 
 			Color.DODGERBLUE, Color.FORESTGREEN, Color.FUCHSIA, Color.GOLD, Color.IVORY, Color.LIGHTGREEN, 	Color.LIGHTPINK, Color.LIME, 
 			Color.MEDIUMORCHID, Color.OLIVEDRAB, Color.ORANGERED, Color.ROYALBLUE, Color.SEAGREEN, Color.TEAL};
 	private double syntheticPaneHeight;
@@ -287,6 +288,11 @@ public class AutomatonMachineController {
 	private int mapindex = 0;
 	private StackPane glass;
 	private Color[] tsneColors;
+	private double[][] train_tsne;
+	private double[][] test_tsne;
+	private double tsne_max;
+	private double tsne_min;
+	private double[][] tsne_data;
 	
 	
 	
@@ -488,7 +494,9 @@ public class AutomatonMachineController {
 				printSample(myAutomaton.getOriginalData().getSample(rand_samp), pred_class, myAutomaton.getTargets()[rand_samp]);
 			}
 			
-			
+			if(hiddenStateWindow.isShowing()) {
+				addObservationTsne(rand_samp);
+			}
 			
 		}
     	
@@ -1559,23 +1567,7 @@ public class AutomatonMachineController {
 	public void show3DTsne() {
 		
 		hiddenStateWindow.show();
-		
-//		spinTask = new Task<Void>() {
-//            
-//            @Override
-//            protected Void call() throws Exception {
-//            	
-//            	
-//            	
-//            	Platform.runLater(hiddenStateController);
-//				return null;
-//            }
-//		
-//		};
-//				
-//		spinThread = new Thread(spinTask, "learn-thread");
-//		spinThread.setDaemon(true);
-//		spinThread.start();
+	
 	}
     
     
@@ -1669,51 +1661,66 @@ public class AutomatonMachineController {
 		final NumberAxis xAxis = new NumberAxis();
 	    final NumberAxis yAxis = new NumberAxis();
 		
-	    final ScatterChart<Number,Number> sc = new
-	            ScatterChart<Number,Number>(xAxis,yAxis);
+	    sc = new ScatterChart<Number,Number>(xAxis,yAxis);
 	    
 	    Color myColor;
-	    double max = Double.MIN_VALUE;
-	    double min = Double.MAX_VALUE;
+	    tsne_max = Double.MIN_VALUE;
+	    tsne_min = Double.MAX_VALUE;
 	    	    
 	    sc.setTitle("t-Distributed Stochastic Neighbor Embedding");
 	    sc.setAnimated(false);
 	    sc.setLegendVisible(false);
 	    
-
+	    
+	    int rand_samp;
+	    tsne_data = data.clone();
+	    train_tsne = new double[training_samples][3];
+	    test_tsne = new double[test_samples][3];
+	    
+	    for(int i = 0; i < data.length; i++) {
+	    	
+	    	if(i < training_samples) {
+	    		rand_samp = training_sample_list.get(i);	
+	    		train_tsne[i] = data[rand_samp];
+	    	}
+	    	else {
+	    		rand_samp = training_sample_list.get(i);	
+	    		test_tsne[i - training_samples] = data[rand_samp];
+	    	}
+	    }
+	    
 	    
 	    if(data != null) {
 	    	
 	    	for(int i = 0; i < data.length; i++) {
-	    		if(data[i][2] > max) max = data[i][2];
-	    		else if(data[i][2] < min) min = data[i][2];
+	    		if(data[i][2] > tsne_max) tsne_max = data[i][2];
+	    		else if(data[i][2] < tsne_min) tsne_min = data[i][2];
 	    	}
 	    	
 	
-	        XYChart.Series pin = new XYChart.Series();
+	        pin = new XYChart.Series();
   
-	        tsneColors = new Color[data.length];
+	        tsneColors = new Color[train_tsne.length];
 	        
-	        for(int i = 0; i < data.length; i++) {
+	        for(int i = 0; i < train_tsne.length; i++) {
 	        	
-	        	final XYChart.Data<Number, Number> dataXY = new XYChart.Data(data[i][0], data[i][1]);
+	        	final XYChart.Data<Number, Number> dataXY = new XYChart.Data(train_tsne[i][0], train_tsne[i][1]);
 	        	
-	        	float trans = (float) (.9f*(data[i][2] - min)/(max - min) + .1f);
+	        	float trans = (float) (.9f*(train_tsne[i][2] - tsne_min)/(tsne_max - tsne_min) + .1f);
 	        	
 	        	if(dataInputController.isContinuousEncoder()) {
-	        		myColor = regressionColors[dataInputController.getData().getLabels()[i]%(regressionColors.length-1)];
+	        		myColor = regressionColors[dataInputController.getData().getLabels()[training_sample_list.get(i)]%(regressionColors.length-1)];
 	        	}
 	        	else if(dataInputController.isRegression()) {
 	        		
-	        		float indicator = (dataInputController.getData().getRegLabels()[i] - dataInputController.getData().getTarget_min())/
+	        		float indicator = (dataInputController.getData().getRegLabels()[training_sample_list.get(i)] - dataInputController.getData().getTarget_min())/
 	        		(dataInputController.getData().getTarget_max() - dataInputController.getData().getTarget_min());
 	        		
 	        		int whichColor = (int)(indicator*((float)(regressionColors.length-1)));
 	        		myColor = regressionColors[whichColor];
 	        	}
 	        	else {
-	        		myColor = defaultColors[dataInputController.getData().getLabels()[i]%(defaultColors.length-1)];
-	        		System.out.println(dataInputController.getData().getLabels()[i] + " " + myColor.toString());
+	        		myColor = defaultColors[dataInputController.getData().getLabels()[training_sample_list.get(i)]%(defaultColors.length-1)];	        		
 	        	}
 	        	
 	        	tsneColors[i] = myColor;
@@ -1724,7 +1731,7 @@ public class AutomatonMachineController {
 	        	        (int) (myColor.getGreen() * 255),
 	        	        (int) (myColor.getBlue() * 255));
 	        	      	
-	        	dataXY.setNode(new HoveredThresholdNode(i, rgb, trans ));
+	        	dataXY.setNode(new HoveredThresholdNode(training_sample_list.get(i), rgb, trans ));
 
 	        	pin.getData().add(dataXY);
 	        }      
@@ -1733,11 +1740,52 @@ public class AutomatonMachineController {
 	    }
 		
 	    
-	    create3DTsneChart(data, tsneController.getMins(), tsneController.getMaxs(), tsneColors);
+	    create3DTsneChart(train_tsne, tsneController.getMins(), tsneController.getMaxs(), tsneColors);
 	    show3DTsne();
 	    
 		return sc;
     }
+    
+    
+    public void addObservationTsne(int samp) {
+    	
+
+    	Color myColor;
+    	double[] tsne_new = tsne_data[samp];
+    	
+    	final XYChart.Data<Number, Number> dataXY = new XYChart.Data(tsne_data[samp][0], tsne_data[samp][1]);
+    	
+    	float trans = (float) (.9f*(tsne_data[samp][2] - tsne_min)/(tsne_max - tsne_min) + .1f);
+    	
+    	if(dataInputController.isContinuousEncoder()) {
+    		myColor = regressionColors[dataInputController.getData().getLabels()[samp]%(regressionColors.length-1)];
+    	}
+    	else if(dataInputController.isRegression()) {
+    		
+    		float indicator = (dataInputController.getData().getRegLabels()[samp] - dataInputController.getData().getTarget_min())/
+    		(dataInputController.getData().getTarget_max() - dataInputController.getData().getTarget_min());
+    		
+    		int whichColor = (int)(indicator*((float)(regressionColors.length-1)));
+    		myColor = regressionColors[whichColor];
+    	}
+    	else {
+    		myColor = defaultColors[dataInputController.getData().getLabels()[samp]%(defaultColors.length-1)];	        		
+    	}
+    	
+
+    	String rgb = String.format("%d, %d, %d",
+    	        (int) (myColor.getRed() * 255),
+    	        (int) (myColor.getGreen() * 255),
+    	        (int) (myColor.getBlue() * 255));
+    	      	
+    	dataXY.setNode(new HoveredThresholdNode(samp, rgb, trans ));
+
+    	pin.getData().add(dataXY);
+         
+        hiddenStateController.updateGrid(tsne_new, myColor);
+                	
+    }
+    
     
 
     class HoveredThresholdNode extends StackPane {
