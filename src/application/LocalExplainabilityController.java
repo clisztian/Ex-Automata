@@ -1,5 +1,6 @@
 package application;
 
+import java.text.DecimalFormat;
 import java.text.ParseException;
 
 import javafx.event.ActionEvent;
@@ -44,13 +45,14 @@ public class LocalExplainabilityController {
 
 	private int n_clauses = 100;
 
-	private int prediction;
-	private int target;
+	private float prediction;
+	private float target;
 
 	private int end_feature = 10;
 
 	private double[] feature_strength = null;
 	
+	final DecimalFormat df = new DecimalFormat("#0.00");
 	
 	public void setAutomaton(AutomatonMachineController myAutomaton) {
 		this.myAutomaton = myAutomaton;
@@ -162,13 +164,13 @@ public class LocalExplainabilityController {
     		
     	}
     	
-    	predictionText.setText("" + prediction);
+    	predictionText.setText(df.format(prediction));
     	
     	if(target < 0) {
     		targetText.setText("NA");
     	}
     	else {
-    		targetText.setText("" + target);
+    		targetText.setText(df.format(target));
     	}
     	
 	}
@@ -189,22 +191,22 @@ public class LocalExplainabilityController {
 	}
 
 
-	public int getPrediction() {
+	public float getPrediction() {
 		return prediction;
 	}
 
 
-	public void setPrediction(int prediction) {
+	public void setPrediction(float prediction) {
 		this.prediction = prediction;
 	}
 
 
-	public int getTarget() {
+	public float getTarget() {
 		return target;
 	}
 
 
-	public void setTarget(int target) {
+	public void setTarget(float target) {
 		this.target = target;
 	}
 

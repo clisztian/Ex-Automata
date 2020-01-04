@@ -107,10 +107,10 @@
                      </effect>
                   </Label>
                   <Label fx:id="smoothnessLabel3" layoutX="19.0" layoutY="56.0" prefHeight="18.0" prefWidth="135.0" text="Clause Threshold" />
-                  <Slider fx:id="clauseThresholdSlider" blockIncrement="1.0" layoutX="165.0" layoutY="54.0" max="1000.0" min="1.0" onKeyPressed="#handleStepsChange" onMouseDragged="#handleStepsChange" prefHeight="24.0" prefWidth="169.0" value="30.0" />
+                  <Slider fx:id="clauseThresholdSlider" blockIncrement="1.0" layoutX="165.0" layoutY="54.0" max="5000.0" min="10.0" onKeyPressed="#handleStepsChange" onMouseDragged="#handleStepsChange" prefHeight="24.0" prefWidth="169.0" value="30.0" />
                   <TextField fx:id="clauseThresholdText" layoutX="334.0" layoutY="53.0" prefHeight="26.0" prefWidth="52.0" text="30" />
                   <Label fx:id="smoothnessLabel4" layoutX="19.0" layoutY="127.0" prefHeight="18.0" prefWidth="135.0" text="Feedback Rate" />
-                  <Slider fx:id="rateSlider" blockIncrement="10.0" layoutX="166.0" layoutY="124.0" max="200.0" min="1.0" onKeyPressed="#handleRateChange" onMouseDragged="#handleRateChange" prefHeight="24.0" prefWidth="169.0" value="100.0" />
+                  <Slider fx:id="rateSlider" blockIncrement="5.0" layoutX="166.0" layoutY="124.0" max="200.0" min="1.0" onKeyPressed="#handleRateChange" onMouseDragged="#handleRateChange" prefHeight="24.0" prefWidth="169.0" value="10.0" />
                   <TextField fx:id="rateSlideText" layoutX="335.0" layoutY="123.0" prefHeight="26.0" prefWidth="52.0" text="100" />
                   <CheckBox fx:id="boostCheck" layoutX="459.0" layoutY="206.0" mnemonicParsing="false" text="Boost" />
                </children>

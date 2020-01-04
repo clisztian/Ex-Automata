@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Random;
 
 import automaton.AutomatonLearningMachine;
+import automaton.FastAutomatonLearningMachine;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.embed.swing.SwingNode;
@@ -53,7 +54,7 @@ import tools.ReferenceMetrics;
 
 public class AutomatonMachineController {
 
-	private AutomatonLearningMachine myAutomaton;
+	private FastAutomatonLearningMachine myAutomaton;
 	private GlobalExplainabilityController globalExpController;
 	private LocalExplainabilityController localExpController;
 	private DataInterfaceController dataInputController;
@@ -278,7 +279,7 @@ public class AutomatonMachineController {
 	
 	Color[] regressionColors = null;
 	
-	Color[] defaultColors = new Color[] {Color.RED, Color.GREEN,  Color.CORNFLOWERBLUE, Color.LIME, Color.LIGHTGREEN, Color.CRIMSON, Color.LIGHTPINK, Color.ALICEBLUE, Color.BLUEVIOLET, Color.DARKCYAN, 
+	Color[] defaultColors = new Color[] {Color.TEAL, Color.FUCHSIA,  Color.CORNFLOWERBLUE, Color.LIME, Color.LIGHTGREEN, Color.CRIMSON, Color.LIGHTPINK, Color.ALICEBLUE, Color.BLUEVIOLET, Color.DARKCYAN, 
 			Color.DODGERBLUE, Color.FORESTGREEN, Color.FUCHSIA, Color.GOLD, Color.IVORY, Color.LIGHTGREEN, 	Color.LIGHTPINK, Color.LIME, 
 			Color.MEDIUMORCHID, Color.OLIVEDRAB, Color.ORANGERED, Color.ROYALBLUE, Color.SEAGREEN, Color.TEAL};
 	private double syntheticPaneHeight;
@@ -336,11 +337,10 @@ public class AutomatonMachineController {
 		
 		if(dataInputController.getDataInterface() != null) {
 			
-			myAutomaton = new AutomatonLearningMachine(dataInputController.getBinarizer(), 
+			myAutomaton = new FastAutomatonLearningMachine(dataInputController.getBinarizer(), 
                     dataInputController.getData(), 
                     threshold_multiplier, 
-                    number_clause_multiplier, 
-                    (float)number_states_multiplier, 
+                    number_clause_multiplier,  
                     (float)learn_rate,
                     dataInputController.isRegression(), 
                     dataInputController.getClassNames().length, 
@@ -476,10 +476,13 @@ public class AutomatonMachineController {
 			localExpController.setPositive_features(myAutomaton.getLocPositiveFeatures());
 			localExpController.setNegative_features(myAutomaton.getLocNegativeFeatures());
 			
-			if(encodeContinuous) localExpController.setPrediction((int)dataInputController.decodeClass(pred_class)); 
+			if(regression) {
+				localExpController.setPrediction(myAutomaton.decode(pred_class));
+			}
+			else if(encodeContinuous) localExpController.setPrediction((int)dataInputController.decodeClass(pred_class)); 
 			else localExpController.setPrediction(pred_class);
 			
-			if(regression || encodeContinuous) localExpController.setTarget((int)myAutomaton.getRegTargets()[rand_samp]);
+			if(regression || encodeContinuous) localExpController.setTarget(myAutomaton.getRegTargets()[rand_samp]);
 			else localExpController.setTarget(myAutomaton.getTargets()[rand_samp]);
 			
 			localExpController.sketchCanvas();
@@ -488,7 +491,7 @@ public class AutomatonMachineController {
 				printRegressionSample(myAutomaton.getOriginalData().getSample(rand_samp), dataInputController.decodeClass(pred_class), myAutomaton.getRegTargets()[rand_samp]);
 			}
 			else if(regression) {
-				printRegressionSample(myAutomaton.getOriginalData().getSample(rand_samp), pred_class, myAutomaton.getRegTargets()[rand_samp]);
+				printRegressionSample(myAutomaton.getOriginalData().getSample(rand_samp), myAutomaton.decode(pred_class), myAutomaton.getRegTargets()[rand_samp]); 
 			}
 			else {
 				printSample(myAutomaton.getOriginalData().getSample(rand_samp), pred_class, myAutomaton.getTargets()[rand_samp]);
@@ -516,6 +519,9 @@ public class AutomatonMachineController {
     		localExpController.setPositive_features(myAutomaton.getLocPositiveFeatures());
     		localExpController.setNegative_features(myAutomaton.getLocNegativeFeatures());
     		
+    		if(regression) {
+    			localExpController.setPrediction(myAutomaton.decode(pred_class));
+    		}
     		if(encodeContinuous) localExpController.setPrediction((int)dataInputController.decodeClass(pred_class)); 
     		else localExpController.setPrediction(pred_class);
     		
@@ -535,7 +541,7 @@ public class AutomatonMachineController {
     			printRegressionSample(myAutomaton.getOriginalData().getSample(rand_samp), dataInputController.decodeClass(pred_class), myAutomaton.getRegTargets()[rand_samp]);
     		}
     		else if(regression) {
-				printRegressionSample(myAutomaton.getOriginalData().getSample(rand_samp), pred_class, myAutomaton.getRegTargets()[rand_samp]);
+				printRegressionSample(myAutomaton.getOriginalData().getSample(rand_samp), myAutomaton.decode(pred_class), myAutomaton.getRegTargets()[rand_samp]);
 			}
     		else {
     			printSample(myAutomaton.getOriginalData().getSample(rand_samp), pred_class, myAutomaton.getTargets()[rand_samp]);
@@ -559,7 +565,7 @@ public class AutomatonMachineController {
 			printRegressionSample(localSynthetic[0], dataInputController.decodeClass(pred_class), -1);
 		}
 		else if(regression) {
-			printRegressionSample(localSynthetic[0], pred_class, -1);
+			printRegressionSample(localSynthetic[0], myAutomaton.decode(pred_class), -1);
 		}
 		else {
 			printSample(localSynthetic[0], pred_class, -1);
@@ -653,8 +659,12 @@ public class AutomatonMachineController {
 		Text label = new Text("\n\n");
 		diagnosticTextFlow.getChildren().add(label);
 
+		double latitude = 0;
+		double longitude = 0;
+		
 		String[] names = globalExpController.getFeature_names();
 		String locationName = null;
+		
 		
 		for(int i = 0; i < names.length; i++) {
 			
@@ -683,6 +693,13 @@ public class AutomatonMachineController {
 			if(names[i].contains("City") || names[i].contains("Location")) {
 				locationName = dataInputController.getCategoricalValue(i, (int)original[i]);
 			}
+			
+			if(names[i].contains("Latitude")) {
+				latitude = original[i];
+			}
+			if(names[i].contains("Longitude")) {
+				longitude = original[i];
+			}
 		}
 		
 		label = new Text("Prediction: ");
@@ -704,6 +721,46 @@ public class AutomatonMachineController {
 		label.setFill(Paint.valueOf(Color.LIGHTGREEN.toString()));
 		label.setFont(Font.font ("Courier", 20));
 		diagnosticTextFlow.getChildren().add(label);
+		
+		//Identified lat/long in data 
+		if(longitude != 0 && latitude != 0) {
+			
+			StringBuilder sb = new StringBuilder();
+			
+			glass.getChildren().clear();
+	        for (Node node : diagnosticTextFlow.getChildren()) {
+	            if (node instanceof Text) {
+			
+	            	String mynext = ((Text) node).getText();
+	            	sb.append(" " + mynext);
+	            	//if(!mynext.contains(":")) sb.append("\n");
+
+	            }
+	        }
+			
+	        
+	        final Label mylabel = new Label(sb.toString());
+        	mylabel.setStyle("-fx-text-fill: cyan; -fx-font: 14 \"courier\"; -fx-padding: 0 0 20 0; -fx-text-alignment: left");
+        	mylabel.setEffect(new Glow(.7));
+        	StackPane.setAlignment(mylabel, Pos.TOP_LEFT);
+            glass.getChildren().addAll(mylabel);             	        
+	        
+            
+            String fullText =  names[rng.nextInt(names.length)];        
+	        while(fullText.contains("City")) {
+	        	fullText = names[rng.nextInt(names.length)];
+	        }
+	        
+	        float indicator = (targ - dataInputController.getData().getTarget_min())/
+	        		(dataInputController.getData().getTarget_max() - dataInputController.getData().getTarget_min());
+	        		
+	        int whichColor = (int)(indicator*((float)(regressionColors.length-1)));
+	        Color myColor = regressionColors[whichColor];
+							
+			addGeographicalObservation(latitude, longitude, myColor, sb.toString());
+		}
+		
+		
 		
 		//Identified location in categorical data
 		if(locationName != null) {
@@ -778,7 +835,7 @@ public class AutomatonMachineController {
     	number_states_multiplier = numStatesSlider.getValue();
     	numStatesText.setText(decimalFormat.format(number_states_multiplier));
     	
-    	if(myAutomaton != null) myAutomaton.setNumStatesMultiplier((float)number_states_multiplier);   	    	
+    	  	
     	
     }
 
@@ -864,10 +921,10 @@ public class AutomatonMachineController {
 						myAutomaton.update(myAutomaton.getTransformedData()[rand_samp], myAutomaton.getTargets()[rand_samp]);
 					}
 					
-					myAutomaton.computeGlobalFeatureImportance(globalExpController.getClassChoice());
-					
-					globalExpController.setPositive_features(myAutomaton.getPositiveFeatures());
-					globalExpController.setNegative_features(myAutomaton.getNegativeFeatures());
+//					myAutomaton.computeGlobalFeatureImportance(globalExpController.getClassChoice());
+//					
+//					globalExpController.setPositive_features(myAutomaton.getPositiveFeatures());
+//					globalExpController.setNegative_features(myAutomaton.getNegativeFeatures());
 				
 					updateProgress(count, n_training_rounds*training_samples); 
 					count++;
@@ -876,10 +933,20 @@ public class AutomatonMachineController {
 				}
 				
 				Thread.sleep(10);
+				myAutomaton.computeGlobalFeatureImportance(globalExpController.getClassChoice());
+				globalExpController.setPositive_features(myAutomaton.getPositiveFeatures());
+				globalExpController.setNegative_features(myAutomaton.getNegativeFeatures());
+				
 				Platform.runLater(new Runnable() {
 				    @Override
 				    public void run() {
-				    	generateTestReport();		
+				    	generateTestReport();	
+				    	try {
+							globalExpController.sketchCanvas();
+						} catch (ParseException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 
 				    }
 				});
@@ -1320,7 +1387,7 @@ public class AutomatonMachineController {
 
 		    }
 			
-			l2error = (float) (Math.sqrt(l2error)/(nsamps));		
+			l2error = (float) (Math.sqrt(l2error)/nsamps);		
 			System.out.println("l2 Error: " + l2error);   
 			
 			double[] perf = new double[] {l2error};
