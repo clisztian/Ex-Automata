@@ -97,7 +97,7 @@ public class JXMapViewerTab {
         	myPainter.setWaypoints(waypoints);
         	myPainter.setRenderer(new FancyWaypointRenderer());
         	jXMapKit.getMainMap().setOverlayPainter(myPainter);            
-            jXMapKit.setZoom(11);
+            //jXMapKit.setZoom(11);
             
 
             jXMapKit.getMainMap().addMouseMotionListener(new MouseMotionListener() {

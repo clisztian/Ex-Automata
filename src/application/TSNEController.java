@@ -2,6 +2,7 @@ package application;
 
 import java.text.DecimalFormat;
 import java.text.ParseException;
+import java.util.Random;
 
 import com.jujutsu.tsne.MemOptimizedTSne;
 import com.jujutsu.tsne.TSne;
@@ -30,7 +31,7 @@ public class TSNEController {
 	private int nIterations = 1000;
 	private int nDimension = 50;
 	private double perplexity = 20.0;
-	
+	Random rng;
 	
     @FXML
     private StackPane tsneCanvas;
@@ -148,6 +149,16 @@ public class TSNEController {
 
     		TSneConfiguration config = TSneUtils.buildConfig(mycopy, 3, nDimension, perplexity, nIterations, true, 0.5, true, false);
     		t_sneOutput = tsne.tsne(config);
+    		
+    		if(t_sneOutput.length > 2000) {
+    			
+    			int[] indices = new int[2000];
+        		for(int i = 0; i < 2000; i++) {
+        			indices[i] = rng.nextInt(t_sneOutput.length);
+        		}
+        		t_sneOutput = MatrixOps.copyRows(t_sneOutput, indices);
+    		}
+    		
 
     		long t2 = System.currentTimeMillis();
     		

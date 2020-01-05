@@ -8,6 +8,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
+import com.jujutsu.utils.MatrixOps;
+
 import automaton.AutomatonLearningMachine;
 import automaton.FastAutomatonLearningMachine;
 import javafx.application.Platform;
@@ -367,7 +369,23 @@ public class AutomatonMachineController {
 			stopButton.setDisable(false);
 			beginTrainingButton.setDisable(false);
 			
-			tsneController.setData(dataInputController.getData().getDoubleData());
+			int my_samples = dataInputController.getData().getDoubleData().length;
+    		if(my_samples > 2000) {
+
+    			int[] indices = new int[2000];
+        		for(int i = 0; i < 2000; i++) {
+        			indices[i] = rng.nextInt(my_samples);
+        		}
+        		double[][] sampled_data = MatrixOps.copyRows(dataInputController.getData().getDoubleData(), indices);
+        		tsneController.setData(sampled_data);
+    		}
+    		else {
+    			tsneController.setData(dataInputController.getData().getDoubleData());
+    		}
+			
+			
+			
+			
 			tsneController.setAutomatonController(this);
 			localSynthetic = new float[1][dataInputController.getFeatureNames().length];
 			
@@ -1741,17 +1759,21 @@ public class AutomatonMachineController {
 	    
 	    int rand_samp;
 	    tsne_data = data.clone();
+	    int n_samples = tsne_data.length;
+	    int training_samples = (int)(split_ratio*n_samples);	
+		int test_samples = n_samples - training_samples;
+	    
 	    train_tsne = new double[training_samples][3];
 	    test_tsne = new double[test_samples][3];
-	    
+	    	    
 	    for(int i = 0; i < data.length; i++) {
 	    	
 	    	if(i < training_samples) {
-	    		rand_samp = training_sample_list.get(i);	
+	    		rand_samp = i;	
 	    		train_tsne[i] = data[rand_samp];
 	    	}
 	    	else {
-	    		rand_samp = training_sample_list.get(i);	
+	    		rand_samp = i;	
 	    		test_tsne[i - training_samples] = data[rand_samp];
 	    	}
 	    }
