@@ -26,6 +26,7 @@ public class ExAutomaton extends Application {
 	        myController.setGlobalExpController();
 	        myController.setLocalExpController();
 	        myController.setTsneController();
+	        myController.setContrastiveController();
 	        myController.setHiddenStateController();
 	        myController.setSyntheticController();
 	        myController.initiateRadioButtons();

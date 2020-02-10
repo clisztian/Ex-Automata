@@ -61,6 +61,7 @@ public class AutomatonMachineController {
 	private LocalExplainabilityController localExpController;
 	private DataInterfaceController dataInputController;
 	private TSNEController tsneController;
+	private ContrastiveController contrastiveController;
 	private XYChart.Series pin;
 	private SyntheticController syntheticController;
 	private HiddenStateCanvas hiddenStateController;
@@ -88,6 +89,9 @@ public class AutomatonMachineController {
 	
 	private Stage tsneWindow = new Stage();
 	private Scene tsneScene;
+	
+	private Stage contrastiveWindow = new Stage();
+	private Scene contrastiveScene;
 	
 	private Stage syntheticWindow = new Stage();
 	private Scene syntheticScene;
@@ -217,6 +221,9 @@ public class AutomatonMachineController {
     private CheckMenuItem tsneCheckbox;
     
     @FXML
+    private CheckMenuItem contrastiveCheckbox;
+    
+    @FXML
     private CheckMenuItem syntheticCheckbox;
     
     @FXML
@@ -297,6 +304,11 @@ public class AutomatonMachineController {
 	private double tsne_min;
 	private double[][] tsne_data;
 	
+	private double contrastive_max;
+	private double contrastive_min;
+	private double[][] contrastive_data;
+	private double[][] train_contrastive;
+	private double[][] test_contrastive;
 	
 	
 	
@@ -381,6 +393,16 @@ public class AutomatonMachineController {
     		}
     		else {
     			tsneController.setData(dataInputController.getData().getDoubleData());
+    			
+    			if(!regression) {
+    				contrastiveController.setForegroundData(dataInputController.getData().getDoubleDataClass(1));
+        			contrastiveController.setBackgroundData(dataInputController.getData().getDoubleDataClass(0));
+    			}
+    			else if(regression) {
+    				contrastiveController.setForegroundData(dataInputController.getData().getForegroundRegressionData());
+    				contrastiveController.setBackgroundData(dataInputController.getData().getBackgroundRegressionData());
+    			}
+    				
     		}
 			
 			
@@ -390,6 +412,7 @@ public class AutomatonMachineController {
 			localSynthetic = new float[1][dataInputController.getFeatureNames().length];
 			
 
+			contrastiveController.setAutomatonController(this);
 			
 		    
 			for(int i = 0; i < dataInputController.getFeatureNames().length; i++) {
@@ -1604,6 +1627,30 @@ public class AutomatonMachineController {
 		
 	}
     
+    public void setContrastiveController() throws IOException, ParseException {
+		
+		FXMLLoader loader = new FXMLLoader(getClass().getResource("contrastivePanel.fxml"));
+		Parent root = (Parent)loader.load();
+		contrastiveController = loader.getController();
+
+		
+		contrastiveScene = new Scene(root);
+		contrastiveScene.getStylesheets().add("css/WhiteOnBlack.css");
+		contrastiveWindow = new Stage();
+		contrastiveWindow.setScene(contrastiveScene);
+		contrastiveWindow.setX(primaryStage.getX() + 250);
+		contrastiveWindow.setY(primaryStage.getY() + 100);
+		
+		contrastiveWindow.setOnCloseRequest(new EventHandler<WindowEvent>() {
+            public void handle(WindowEvent we) {
+            	contrastiveCheckbox.setSelected(false);
+            }
+        });
+		
+		contrastiveController.initializeContrastive();
+		contrastiveController.setStage(primaryStage);
+		
+	}
     
     public void setSyntheticController() throws IOException, ParseException {
 		
@@ -1644,7 +1691,7 @@ public class AutomatonMachineController {
 		hiddenStateWindow.setScene(hiddenStateScene);
 		hiddenStateWindow.setX(primaryStage.getX() + 250);
 		hiddenStateWindow.setY(primaryStage.getY() + 100);
-		hiddenStateWindow.setTitle("3DtSNE");
+		hiddenStateWindow.setTitle("3D cPCA and tsne");
 			
 		hiddenStateController.createHiddenState(hiddenStateScene);	
 	}
@@ -1704,6 +1751,16 @@ public class AutomatonMachineController {
     	
     }
     
+    @FXML
+    void handleContrastiveCheckbox(ActionEvent event) {
+
+    	if(contrastiveCheckbox.isSelected()) {
+    		contrastiveWindow.show();
+		}
+		else {
+			contrastiveWindow.close();
+		}	   	
+    }
     
 	public void setStage(Stage primaryStage) {
 		this.primaryStage = primaryStage;
@@ -1740,6 +1797,8 @@ public class AutomatonMachineController {
 		hiddenStateController.updateGrid(data, mins, maxs, colors);	
 	}
 
+
+	
 
     public ScatterChart createScatterChart(double[][] data) throws ParseException {
 		
@@ -1834,6 +1893,104 @@ public class AutomatonMachineController {
 	    
 		return sc;
     }
+    
+    
+
+    public ScatterChart createContrastiveScatterChart(double[][] data) throws ParseException {
+		
+		final NumberAxis xAxis = new NumberAxis();
+	    final NumberAxis yAxis = new NumberAxis();
+		
+	    sc = new ScatterChart<Number,Number>(xAxis,yAxis);
+	    
+	    Color myColor;
+	    contrastive_max = -Double.MAX_VALUE;
+	    contrastive_min = Double.MAX_VALUE;
+	    	    
+	    sc.setTitle("Contrastive PCA");
+	    sc.setAnimated(false);
+	    sc.setLegendVisible(false);
+	    
+	    
+	    int rand_samp;
+	    contrastive_data = data.clone();
+	    int n_samples = contrastive_data.length;
+	    int training_samples = (int)(split_ratio*n_samples);	
+		int test_samples = n_samples - training_samples;
+	    
+	    train_contrastive = new double[training_samples][3];
+	    test_contrastive = new double[test_samples][3];
+	    tsneColors = new Color[train_contrastive.length];	    
+	    
+	    for(int i = 0; i < data.length; i++) {
+	    	
+	    	if(i < training_samples) {
+	    		rand_samp = training_sample_list.get(i);
+	    		train_contrastive[i] = data[rand_samp];
+	    	}
+	    	else {
+	    		rand_samp = training_sample_list.get(training_samples + rng.nextInt(test_samples));		
+	    		test_contrastive[i - training_samples] = data[rand_samp];
+	    	}
+	    }
+	    
+	    
+	    if(data != null) {
+	    	
+	    	for(int i = 0; i < data.length; i++) {
+	    		if(data[i][2] > contrastive_max) contrastive_max = data[i][2];
+	    		else if(data[i][2] < contrastive_min) contrastive_min = data[i][2];
+	    	}
+	    	
+	
+	        pin = new XYChart.Series();
+  
+	        tsneColors = new Color[train_contrastive.length];
+	        
+	        for(int i = 0; i < train_contrastive.length; i++) {
+	        	
+	        	final XYChart.Data<Number, Number> dataXY = new XYChart.Data(train_contrastive[i][0], train_contrastive[i][1]);
+	        	
+	        	float trans = (float) (.9f*(train_contrastive[i][2] - contrastive_min)/(contrastive_max - contrastive_min) + .1f);
+	        	
+	        	if(dataInputController.isContinuousEncoder()) {
+	        		myColor = regressionColors[dataInputController.getData().getLabels()[training_sample_list.get(i)]%(regressionColors.length-1)];
+	        	}
+	        	else if(dataInputController.isRegression()) {
+	        		
+	        		float indicator = (dataInputController.getData().getRegLabels()[training_sample_list.get(i)] - dataInputController.getData().getTarget_min())/
+	        		(dataInputController.getData().getTarget_max() - dataInputController.getData().getTarget_min());
+	        		
+	        		int whichColor = (int)(indicator*((float)(regressionColors.length-1)));
+	        		myColor = regressionColors[whichColor];
+	        	}
+	        	else {
+	        		myColor = defaultColors[dataInputController.getData().getLabels()[training_sample_list.get(i)]%(defaultColors.length-1)];	        		
+	        	}
+	        	
+	        	tsneColors[i] = myColor;
+	        	
+	        	
+	        	String rgb = String.format("%d, %d, %d",
+	        	        (int) (myColor.getRed() * 255),
+	        	        (int) (myColor.getGreen() * 255),
+	        	        (int) (myColor.getBlue() * 255));
+	        	      	
+	        	dataXY.setNode(new HoveredThresholdNode(training_sample_list.get(i), rgb, trans ));
+
+	        	pin.getData().add(dataXY);
+	        }      
+	        sc.getData().addAll(pin);
+	        
+	    }
+		
+	    
+	    create3DTsneChart(train_contrastive, contrastiveController.getMins(), contrastiveController.getMaxs(), tsneColors);
+	    show3DTsne();
+	    
+		return sc;
+    }
+    
     
     
     public void addObservationTsne(int samp) {
