@@ -394,9 +394,9 @@ public class AutomatonMachineController {
     		else {
     			tsneController.setData(dataInputController.getData().getDoubleData());
     			
-    			if(!regression) {
-    				contrastiveController.setForegroundData(dataInputController.getData().getDoubleDataClass(1));
-        			contrastiveController.setBackgroundData(dataInputController.getData().getDoubleDataClass(0));
+    			if(!regression) {								
+    				contrastiveController.setForegroundData(dataInputController.getData().getDoubleDataClass(0));
+        			contrastiveController.setBackgroundData(dataInputController.getData().getDoubleDataAllButClass(0));
     			}
     			else if(regression) {
     				contrastiveController.setForegroundData(dataInputController.getData().getForegroundRegressionData());

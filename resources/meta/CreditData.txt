@@ -1,0 +1,20 @@
+Data Set LGD
+The data set has been kindly provided by a European bank and has been slightly modified and anonymized. It includes 2,545 observations on loans and LGDs. Key variables are:
+◾ LTV: Loan-to-value ratio, in %
+◾ Recovery_rate: Recovery rate, in %
+◾ lgd_time: Loss rate given default (LGD), in %
+◾ y_logistic: Logistic transformation of the LGD
+◾ lnrr: Natural logarithm of the recovery rate
+◾ Y_probit: Probit transformation of the LGD
+◾ purpose1: Indicator variable for the purpose of the loan; 1 = renting purpose, 0 = other
+◾ event: Indicator variable for a default or cure event; 1 = event, 0 = no event
+ 
+ 
+Data Set Ratings
+The ratings data set is an anonymized data set with corporate ratings where the ratings have been numerically encoded (1 = AAA, etc.). It has the following variables:
+◾ COMMEQTA: Common equity to total assets
+◾ LLPLOANS: Loan loss provision to total loans
+◾ COSTTOINCOME: Operating costs to operating income
+◾ ROE: Return on equity
+◾ LIQASSTA: Liquid assets to total assets
+◾ SIZE: Natural logarithm of total assets
