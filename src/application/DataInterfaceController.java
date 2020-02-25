@@ -308,6 +308,10 @@ public class DataInterfaceController {
 		}
 
 
+		public String[] getIDNames() {
+			return dataInterface.getIDs();
+			//return null;
+		}
 
 		public int getTargetResolution() {
 			return (int)resolutionSlider.getValue();

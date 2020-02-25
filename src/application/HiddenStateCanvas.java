@@ -227,12 +227,12 @@ public class HiddenStateCanvas { //implements Runnable {
 		          
         //hiddenStatePane.getChildren().set(0,grid);
         
-//        rt = new RotateTransition(Duration.millis(8000), grid);
-//        rt.setAxis(Rotate.Y_AXIS);  
-//	    rt.setByAngle(360);
-//	    rt.setCycleCount(Animation.INDEFINITE);
-//	    rt.setAutoReverse(true);
-//	    rt.play();
+        rt = new RotateTransition(Duration.millis(8000), grid);
+        rt.setAxis(Rotate.Y_AXIS);  
+	    rt.setByAngle(360);
+	    rt.setCycleCount(Animation.INDEFINITE);
+	    rt.setAutoReverse(true);
+	    rt.play();
 	}
 	
 	
