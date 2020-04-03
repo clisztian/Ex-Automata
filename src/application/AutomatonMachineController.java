@@ -1116,7 +1116,7 @@ public class AutomatonMachineController {
 			sb.append("ErrorRate: " + metrics.getError_rate() + "\n");
 			sb.append("F1: " + metrics.getF1_score() + "\n");
 			sb.append("F2: " + metrics.getF2_score() + "\n");
-			sb.append("MCC: " + metrics.getMCC() + "\n");
+			sb.append("Productivity: " + metrics.getProductivity() + "\n");
 			
 			diagnosticTextFlow.getChildren().clear();
 			
@@ -1202,12 +1202,12 @@ public class AutomatonMachineController {
 			label.setFont(Font.font ("Courier New", 20));
 			diagnosticTextFlow.getChildren().add(label);
 			
-			label = new Text("MCC: ");
+			label = new Text("Productivity: ");
 			label.setFill(Paint.valueOf(Color.LIGHTSKYBLUE.toString()));
 			label.setFont(Font.font ("Courier New", 20));
 			label.setEffect(new Glow(1.0));
 			diagnosticTextFlow.getChildren().add(label);
-			label = new Text(metrics.getMCC() + "\n");
+			label = new Text(metrics.getProductivity() + "\n");
 			label.setFill(Paint.valueOf(Color.YELLOW.toString()));
 			label.setFont(Font.font ("Courier New", 20));
 			
@@ -1371,12 +1371,12 @@ public class AutomatonMachineController {
 				label.setFont(Font.font ("Courier New", 20));
 				diagnosticTextFlow.getChildren().add(label);
 				
-				label = new Text("MCC: ");
+				label = new Text("Productivity: ");
 				label.setFill(Paint.valueOf(Color.LIGHTSKYBLUE.toString()));
 				label.setFont(Font.font ("Courier New", 20));
 				label.setEffect(new Glow(1.0));
 				diagnosticTextFlow.getChildren().add(label);
-				label = new Text(metrics.getMCC() + "\n\n\n");
+				label = new Text(metrics.getProductivity() + "\n\n\n");
 				label.setFill(Paint.valueOf(Color.YELLOW.toString()));
 				label.setFont(Font.font ("Courier New", 20));
 				diagnosticTextFlow.getChildren().add(label);

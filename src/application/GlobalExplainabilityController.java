@@ -88,6 +88,8 @@ public class GlobalExplainabilityController {
     	end_feature = 10;
     	feature_number = featureInterpreterComboBox.getSelectionModel().getSelectedIndex();
     	
+    	System.out.println("Class selected: ");
+    	
     	if(feature_number == 0) {
     		end_feature = Math.min(feature_names.length,10);
     	}
@@ -163,13 +165,14 @@ public class GlobalExplainabilityController {
     		}
     		String[] feature_interpret_names = myAutomaton.getFeatureInterpretNames(feature_number - 1);
     	    
-    	        	    
+    	       	    
     		globalExpChart.getChildren().set(0, GlobalExpBarChart.createBarChart(feature_interpret_names, feature_strength, 
     				n_clauses, negatedFeaturesCheckBox.isSelected(), featureInterpreterComboBox.getSelectionModel().getSelectedItem(), "Global Interpretability", end_feature));
     		
     	}
     	else {
     		
+    		System.out.println("Gets here"); 
     		feature_strength = positive_features;
     		
         	if(!negatedFeaturesCheckBox.isSelected()) {
