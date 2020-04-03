@@ -92,6 +92,10 @@ public class GlobalExpBarChart {
 	        ArrayUtils.reverse(feature_importance);
 	        ArrayUtils.reverse(indexes);
 	        
+	        for(int i = 0; i < indexes.length; i++) {
+	        	System.out.println(feature_names[indexes[i]] + ": " +  feature_importance[i]/sum);
+	        }
+	        
 	        
 	        int start = Math.max(0, end_features - screenMAX  );
 	        
