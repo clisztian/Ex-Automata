@@ -35,6 +35,7 @@
                <items>
                   <CheckMenuItem fx:id="globalExpCheckbox" mnemonicParsing="false" onAction="#handleGlobalExpCheckbox" text="Global Explainability" />
                   <CheckMenuItem fx:id="localExpCheckbox" mnemonicParsing="false" onAction="#handleLocalExpCheckbox" text="Local Explainability" />
+                  <CheckMenuItem fx:id="rangeExpCheckbox" mnemonicParsing="false" onAction="#handleRangeExpCheckbox" text="Range Explainability" />
                   <CheckMenuItem fx:id="tsneCheckbox" mnemonicParsing="false" onAction="#handleTsneCheckbox" text="t-SNE Data View" />
                   <CheckMenuItem fx:id="syntheticCheckbox" mnemonicParsing="false" onAction="#handleSyntheticCheckbox" text="Synthetic Data Generator" />
                   <CheckMenuItem fx:id="contrastiveCheckbox" mnemonicParsing="false" onAction="#handleContrastiveCheckbox" text="Contrastive PCA" />

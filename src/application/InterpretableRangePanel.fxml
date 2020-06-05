@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="516.0" prefWidth="788.0" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.InterpretableRangeController">
+   <children>
+      <StackPane fx:id="stackBarChart" prefHeight="467.0" prefWidth="788.0" />
+      <AnchorPane prefHeight="43.0" prefWidth="788.0">
+         <children>
+            <Label layoutX="43.0" layoutY="14.0" text="Model Output" />
+            <Slider fx:id="outputSlider" blockIncrement="1.0" layoutX="151.0" layoutY="14.0" onKeyPressed="#handleOutputClassChanged" onMouseDragged="#handleOutputClassChanged" prefHeight="16.0" prefWidth="172.0" />
+            <TextField fx:id="modelOutputText" layoutX="323.0" layoutY="9.0" prefHeight="26.0" prefWidth="52.0" />
+            <Slider fx:id="topClauseSlider" blockIncrement="1.0" layoutX="495.0" layoutY="14.0" min="1.0" onKeyPressed="#handleTopClauseSlider" onMouseDragged="#handleTopClauseSlider" value="1.0" />
+            <TextField fx:id="topClauseText" layoutX="642.0" layoutY="9.0" prefHeight="26.0" prefWidth="89.0" />
+         </children>
+      </AnchorPane>
+   </children>
+</VBox>

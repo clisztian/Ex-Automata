@@ -77,24 +77,33 @@ public class GlobalExpBarChart {
 	        	indexes[i] = i;
 	        }
 	        
+	        quicksort(feature_importance, indexes);
+	        ArrayUtils.reverse(feature_importance);
+	        ArrayUtils.reverse(indexes);
+	        
 	        double sum = 0;
 	        if(title.equalsIgnoreCase("Local Interpretability")) {
 	        	for(int i = 0; i < num_features; i++) {
 	        		
 		        	sum += feature_importance[i];
 		        }
-		        if(sum == 0) sum = 1;
+		        if(sum == 0) sum = 1;		        
+		        for(int i = 0; i < num_features; i++) {	        		
+		        	System.out.print(", " + "(" + feature_names[indexes[i]] + ", " + (feature_importance[i]/sum) + ")");
+		        }
+		        System.out.println("");   
 	        }
 	        else sum = 1;
 	        
+
 	        
-	        quicksort(feature_importance, indexes);
-	        ArrayUtils.reverse(feature_importance);
-	        ArrayUtils.reverse(indexes);
-	        
-	        for(int i = 0; i < indexes.length; i++) {
-	        	System.out.println(feature_names[indexes[i]] + ": " +  feature_importance[i]/sum);
+	        if(title.equalsIgnoreCase("Global Interpretability")) {
+	        	System.out.println("\nGlobal feature strength");
+		        for(int i = 0; i < indexes.length; i++) {
+		        	System.out.println(i + " " + feature_names[indexes[i]] + ": " +  feature_importance[i]/sum);
+		        }
 	        }
+	        
 	        
 	        
 	        int start = Math.max(0, end_features - screenMAX  );

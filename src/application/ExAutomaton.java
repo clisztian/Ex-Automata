@@ -19,7 +19,7 @@ public class ExAutomaton extends Application {
 	        primaryStage.setTitle("Ex Automata");
 	        
 	        Scene primaryScene = new Scene(root);
-	        primaryScene.getStylesheets().add("css/WhiteOnBlack.css");
+	        primaryScene.getStylesheets().add("css/light.css");
 	        primaryStage.setScene(primaryScene);
 	        
 	        myController.setDataInputController();
@@ -32,6 +32,7 @@ public class ExAutomaton extends Application {
 	        myController.initiateRadioButtons();
 	        myController.initiateCanvas();
 	        myController.initializeGeografica();
+	        myController.setInterpretableRangeController();
  
 	        primaryStage.show();
 	        

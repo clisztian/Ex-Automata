@@ -59,6 +59,7 @@ public class AutomatonMachineController {
 	private FastAutomatonLearningMachine myAutomaton;
 	private GlobalExplainabilityController globalExpController;
 	private LocalExplainabilityController localExpController;
+	private InterpretableRangeController rangeExpController;
 	private DataInterfaceController dataInputController;
 	private TSNEController tsneController;
 	private ContrastiveController contrastiveController;
@@ -80,6 +81,9 @@ public class AutomatonMachineController {
 	private Stage primaryStage; 
 	private Stage globalExpWindow = new Stage();
 	private Scene globalExpScene;
+	
+	private Stage rangeExpWindow = new Stage();
+	private Scene rangeExpScene;	
 	
 	private Stage localExpWindow = new Stage();
 	private Scene localExpScene;
@@ -210,6 +214,9 @@ public class AutomatonMachineController {
 
     @FXML
     private CheckMenuItem globalExpCheckbox;
+    
+    @FXML
+    private CheckMenuItem rangeExpCheckbox;
 
     @FXML
     private CheckMenuItem localExpCheckbox;
@@ -378,6 +385,11 @@ public class AutomatonMachineController {
 			localExpController.setFeatureNameComboBox(dataInputController.getFeatureNames());
 			localExpController.setAutomaton(this);
 			
+			rangeExpController.setFeatureNames(dataInputController.getFeatureNames());
+			rangeExpController.setClassNames(dataInputController.getClassNames());
+			rangeExpController.setAutomaton(this);
+			rangeExpController.setCanvas();
+			
 			diagnosticName = new String[] {"Specificity", "Accuracy", "F1"};
 			performanceRecord = new ArrayList<double[]>();
 			
@@ -410,13 +422,8 @@ public class AutomatonMachineController {
     				
     		}
 			
-			
-			
-			
 			tsneController.setAutomatonController(this);
 			localSynthetic = new float[1][dataInputController.getFeatureNames().length];
-			
-
 			contrastiveController.setAutomatonController(this);
 			
 		    
@@ -450,9 +457,7 @@ public class AutomatonMachineController {
 			
 	    	training_sample_list = new ArrayList<Integer>();
 			for(int i = 0; i < n_samples; i++) training_sample_list.add(i);
-			Collections.shuffle(training_sample_list);
-			
-			
+			Collections.shuffle(training_sample_list);	
 			System.out.println("Automaton Initiated");
 		}
 	}
@@ -480,6 +485,12 @@ public class AutomatonMachineController {
     @FXML
     void handleNewSample()  throws Exception {
 
+    	
+//    	for(int i = 0; i < n_samples; i++) {
+//    		computeSample(i);
+//    	}
+    		
+    	
     	/**
     	 * Grab new observation and update or predict
     	 */
@@ -1020,6 +1031,8 @@ public class AutomatonMachineController {
 				myAutomaton.computeGlobalFeatureImportance(globalExpController.getClassChoice());
 				globalExpController.setPositive_features(myAutomaton.getPositiveFeatures());
 				globalExpController.setNegative_features(myAutomaton.getNegativeFeatures());
+				
+				rangeExpController.updateChart();
 				
 				Platform.runLater(new Runnable() {
 				    @Override
@@ -1610,6 +1623,13 @@ public class AutomatonMachineController {
 		globalExpController.setNegative_features(myAutomaton.getNegativeFeatures());
     }
     
+    public void computeIntitialFeatureImportance() {
+    	myAutomaton.computeGlobalFeatureImportance(0);
+    }
+    
+    public void computeFeatureImportance(int myclass, double top) {
+    	myAutomaton.computeGlobalFeatureImportance(myclass, top);
+    }
     
     public void setLocalExpController() throws IOException, ParseException {
 		
@@ -1660,6 +1680,32 @@ public class AutomatonMachineController {
 		
 		globalExpController.initiateCanvas();
 		globalExpController.setStage(primaryStage);
+		
+	}
+    
+
+    public void setInterpretableRangeController() throws IOException, ParseException {
+    
+		FXMLLoader loader = new FXMLLoader(getClass().getResource("InterpretableRangePanel.fxml"));
+		Parent root = (Parent)loader.load();
+		rangeExpController = loader.getController();
+
+		
+		rangeExpScene = new Scene(root);
+		rangeExpScene.getStylesheets().add("css/WhiteOnBlack.css");
+		rangeExpWindow = new Stage();
+		rangeExpWindow.setScene(rangeExpScene);
+		rangeExpWindow.setX(primaryStage.getX() + 250);
+		rangeExpWindow.setY(primaryStage.getY() + 100);
+		
+		rangeExpWindow.setOnCloseRequest(new EventHandler<WindowEvent>() {
+            public void handle(WindowEvent we) {
+            	rangeExpCheckbox.setSelected(false);
+            }
+        });
+		
+		rangeExpController.initiateCanvas();
+		rangeExpController.setStage(primaryStage);
 		
 	}
     
@@ -1828,6 +1874,18 @@ public class AutomatonMachineController {
     }
     
     @FXML
+    void handleRangeExpCheckbox(ActionEvent event) {
+
+    	if(rangeExpCheckbox.isSelected()) {
+    		rangeExpWindow.show();
+		}
+		else {
+			rangeExpWindow.close();
+		}	
+    	
+    }
+    
+    @FXML
     void handleTsneCheckbox(ActionEvent event) {
 
     	if(tsneCheckbox.isSelected()) {
@@ -1879,6 +1937,14 @@ public class AutomatonMachineController {
 		return myAutomaton.getLocFeatureInterpreter(feature_number);
 	}
 
+	public float[][] getRanges() {
+		return myAutomaton.getFeatureRange();
+	}
+	
+	public float[][] getFeatureMaxRange() {
+		return myAutomaton.getMaxRange();
+	}
+	
 	
 	public void create3DTsneChart(double[][] data, double[] mins, double[] maxs, Color[] colors) {
 		
@@ -2366,6 +2432,13 @@ public class AutomatonMachineController {
   	}
     	
    }
+
+
+
+	public void setRangeClass(int myClassOutput) {		
+		System.out.println("Myclass: " + myClassOutput);
+		myAutomaton.computeGlobalFeatureImportance(myClassOutput);		
+	}
     
 }
 
