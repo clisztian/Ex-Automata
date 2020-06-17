@@ -13,6 +13,8 @@ import com.jujutsu.utils.MatrixOps;
 import automaton.AutomatonLearningMachine;
 import automaton.FastAutomatonLearningMachine;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
 import javafx.embed.swing.SwingNode;
 import javafx.event.ActionEvent;
@@ -319,6 +321,7 @@ public class AutomatonMachineController {
 	private int sample_number = 0;
 	private String[] id_names = null;
 	private int current_sample = 0;
+	private double[][] localInterpretMatrix;
 	
 	
 	
@@ -368,7 +371,7 @@ public class AutomatonMachineController {
                     (float)learn_rate,
                     dataInputController.isRegression(), 
                     dataInputController.getClassNames().length, 
-                    boostCheck.isSelected());
+                    true);
 						
 			nClasses = dataInputController.getClassNames().length;
 			regression = dataInputController.isRegression();
@@ -409,6 +412,7 @@ public class AutomatonMachineController {
         		tsneController.setData(sampled_data);
     		}
     		else {
+    			
     			tsneController.setData(dataInputController.getData().getDoubleData());
     			
     			if(!regression) {								
@@ -459,10 +463,57 @@ public class AutomatonMachineController {
 			for(int i = 0; i < n_samples; i++) training_sample_list.add(i);
 			Collections.shuffle(training_sample_list);	
 			System.out.println("Automaton Initiated");
+			
+			
+	    	boostCheck.selectedProperty().addListener(new ChangeListener<Boolean>() {
+	    	    @Override
+	    	    public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) { 	
+	    	    	
+	    	    	boolean sel = boostCheck.isSelected();
+	    	    	setDimensionReductionData(sel);
+	    	    	
+	    	    }
+	    	});
+			
 		}
 	}
 	
+	
+	public void setDimensionReductionData(boolean localized) {
+		
+		if(!localized) {
+			
+			tsneController.setData(dataInputController.getData().getDoubleData());
+			
+			if(!regression) {								
+				contrastiveController.setForegroundData(dataInputController.getData().getDoubleDataClass(0));
+				contrastiveController.setBackgroundData(dataInputController.getData().getDoubleDataAllButClass(0));
+			}
+			else if(regression) {
+				contrastiveController.setForegroundData(dataInputController.getData().getForegroundRegressionData());
+				contrastiveController.setBackgroundData(dataInputController.getData().getBackgroundRegressionData());
+			}
+		}
+		else if(localized && localInterpretMatrix != null) {
+			
+			tsneController.setData(localInterpretMatrix);
+			
+			if(!regression) {								
+				contrastiveController.setForegroundData(dataInputController.getData().getDoubleDataClass(localInterpretMatrix,0));
+				contrastiveController.setBackgroundData(dataInputController.getData().getDoubleDataAllButClass(localInterpretMatrix,0));
+			}
+			else if(regression) {
+				contrastiveController.setForegroundData(dataInputController.getData().getForegroundRegressionData(localInterpretMatrix));
+				contrastiveController.setBackgroundData(dataInputController.getData().getBackgroundRegressionData(localInterpretMatrix));
+			}
+		}
+		
+		
+		
+	}
 
+	
+	
 	@FXML
     void handleAutomatonBuild(ActionEvent event) throws Exception {
 		initiateAutomaton();	
@@ -622,6 +673,25 @@ public class AutomatonMachineController {
     		}
     	}
     }
+    
+    
+    public void computeLocalInterpretabilityMatrix() {
+    	
+    	localInterpretMatrix = new double[n_samples][];
+    	System.out.println("Compute interpretability matrix...");
+    	for(int i = 0; i < n_samples; i++) { 		
+    		myAutomaton.computeLocalFeatureImportance(myAutomaton.getTransformedData()[i]);
+    		
+    		double[] mydaa = myAutomaton.getLocPositiveFeatures();
+    		for(int k = 0; k < mydaa.length; k++) {
+    			System.out.print(mydaa[k] + " ");
+    		}
+    		
+    		localInterpretMatrix[i] = mydaa; 		
+    	}
+    }
+    
+    
     
     public void computeSyntheticSample(int[] Xi) throws ParseException {
     	
@@ -1062,6 +1132,8 @@ public class AutomatonMachineController {
       learnThread = new Thread(learnTask, "learn-thread");
 	  learnThread.setDaemon(true);
 	  learnThread.start();
+	  
+	  computeLocalInterpretabilityMatrix();
 		
 		
     }

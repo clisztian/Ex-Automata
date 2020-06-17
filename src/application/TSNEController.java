@@ -10,7 +10,8 @@ import com.jujutsu.tsne.TSneConfiguration;
 import com.jujutsu.utils.MatrixOps;
 import com.jujutsu.utils.TSneUtils;
 
-
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.chart.ScatterChart;
@@ -85,6 +86,9 @@ public class TSNEController {
     	
     	df.setMaximumFractionDigits(2);
     	tsneCanvas.getChildren().add(AutomatonMachineController.createScatterChart());
+    	
+
+    	
     }
     
     
@@ -99,9 +103,6 @@ public class TSNEController {
     	nDimension = (int)dimsSlider.getValue();
     	dimsText.setText("" + nDimension);
     	
-    	if(realTimeCheckBox.isSelected()) {
-    		computeTSNE();	
-    	}
     	
     }
 
@@ -111,9 +112,6 @@ public class TSNEController {
     	nIterations = (int)iterationsSlider.getValue();
     	perplexityText1.setText("" + nIterations);
     	
-    	if(realTimeCheckBox.isSelected()) {
-    		computeTSNE();	
-    	}
     }
 
     @FXML
@@ -122,9 +120,6 @@ public class TSNEController {
     	perplexity = perplexitySlider.getValue();
     	perplexityText.setText("" + perplexity);
     	
-    	if(realTimeCheckBox.isSelected()) {
-    		computeTSNE();	
-    	}
     }
 
     

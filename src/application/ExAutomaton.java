@@ -19,7 +19,7 @@ public class ExAutomaton extends Application {
 	        primaryStage.setTitle("Ex Automata");
 	        
 	        Scene primaryScene = new Scene(root);
-	        primaryScene.getStylesheets().add("css/light.css");
+	        primaryScene.getStylesheets().add("css/WhiteOnBlack.css");
 	        primaryStage.setScene(primaryScene);
 	        
 	        myController.setDataInputController();
