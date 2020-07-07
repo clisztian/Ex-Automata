@@ -65,6 +65,7 @@ public class AutomatonMachineController {
 	private DataInterfaceController dataInputController;
 	private TSNEController tsneController;
 	private ContrastiveController contrastiveController;
+	private InterpretableClusteringController interClusterController;
 	private XYChart.Series pin;
 	private SyntheticController syntheticController;
 	private HiddenStateCanvas hiddenStateController;
@@ -95,9 +96,12 @@ public class AutomatonMachineController {
 	
 	private Stage tsneWindow = new Stage();
 	private Scene tsneScene;
-	
+
 	private Stage contrastiveWindow = new Stage();
 	private Scene contrastiveScene;
+	
+	private Stage interpretClusterWindow = new Stage();
+	private Scene interpretClusterScene;
 	
 	private Stage syntheticWindow = new Stage();
 	private Scene syntheticScene;
@@ -232,6 +236,9 @@ public class AutomatonMachineController {
     @FXML
     private CheckMenuItem contrastiveCheckbox;
     
+    @FXML
+    private CheckMenuItem interpretClusterCheckbox;
+
     @FXML
     private CheckMenuItem syntheticCheckbox;
     
@@ -389,8 +396,8 @@ public class AutomatonMachineController {
 			localExpController.setAutomaton(this);
 			
 			rangeExpController.setFeatureNames(dataInputController.getFeatureNames());
-			rangeExpController.setClassNames(dataInputController.getClassNames());
 			rangeExpController.setAutomaton(this);
+			rangeExpController.setOutputSliderMax(getNumberTargets());
 			rangeExpController.setCanvas();
 			
 			diagnosticName = new String[] {"Specificity", "Accuracy", "F1"};
@@ -429,6 +436,7 @@ public class AutomatonMachineController {
 			tsneController.setAutomatonController(this);
 			localSynthetic = new float[1][dataInputController.getFeatureNames().length];
 			contrastiveController.setAutomatonController(this);
+			interClusterController.setAutomatonController(this);
 			
 		    
 			for(int i = 0; i < dataInputController.getFeatureNames().length; i++) {
@@ -506,6 +514,8 @@ public class AutomatonMachineController {
 				contrastiveController.setForegroundData(dataInputController.getData().getForegroundRegressionData(localInterpretMatrix));
 				contrastiveController.setBackgroundData(dataInputController.getData().getBackgroundRegressionData(localInterpretMatrix));
 			}
+			
+			
 		}
 		
 		
@@ -680,15 +690,23 @@ public class AutomatonMachineController {
     	localInterpretMatrix = new double[n_samples][];
     	System.out.println("Compute interpretability matrix...");
     	for(int i = 0; i < n_samples; i++) { 		
+    		
     		myAutomaton.computeLocalFeatureImportance(myAutomaton.getTransformedData()[i]);
     		
     		double[] mydaa = myAutomaton.getLocPositiveFeatures();
     		for(int k = 0; k < mydaa.length; k++) {
     			System.out.print(mydaa[k] + " ");
     		}
+    		System.out.println("");
     		
     		localInterpretMatrix[i] = mydaa; 		
+    		
+    		if(regression) {
+    			myAutomaton.learn_regression_ranges(myAutomaton.getTransformedData()[i]);
+    		}
     	}
+    	interClusterController.setLocalImportance(localInterpretMatrix);
+    	interClusterController.setFeatureImportance(myAutomaton.getPositiveFeatures());
     }
     
     
@@ -905,7 +923,7 @@ public class AutomatonMachineController {
 			
 	        
 	        final Label mylabel = new Label(sb.toString());
-        	mylabel.setStyle("-fx-text-fill: cyan; -fx-font: 14 \"courier\"; -fx-padding: 0 0 20 0; -fx-text-alignment: left");
+        	mylabel.setStyle("-fx-text-fill: darkblue; -fx-font: 14 \"courier\"; -fx-padding: 0 0 20 0; -fx-text-alignment: left");
         	mylabel.setEffect(new Glow(.7));
         	StackPane.setAlignment(mylabel, Pos.TOP_LEFT);
             glass.getChildren().addAll(mylabel);             	        
@@ -947,7 +965,7 @@ public class AutomatonMachineController {
 			
 	        
 	        final Label mylabel = new Label(sb.toString());
-        	mylabel.setStyle("-fx-text-fill: cyan; -fx-font: 14 \"courier\"; -fx-padding: 0 0 20 0; -fx-text-alignment: left");
+        	mylabel.setStyle("-fx-text-fill: darkblue; -fx-font: 14 \"courier\"; -fx-padding: 0 0 20 0; -fx-text-alignment: left");
         	mylabel.setEffect(new Glow(.7));
         	StackPane.setAlignment(mylabel, Pos.TOP_LEFT);
             glass.getChildren().addAll(mylabel);             	        
@@ -1064,8 +1082,6 @@ public class AutomatonMachineController {
 		metrics = new ReferenceMetrics();
 		
 		globalExpController.setNClauses(myAutomaton.getNClauses());
-		//isTraining = true;
-
 		learnTask = new Task<Void>() {
 	    	
 
@@ -1085,12 +1101,7 @@ public class AutomatonMachineController {
 					else {
 						myAutomaton.update(myAutomaton.getTransformedData()[rand_samp], myAutomaton.getTargets()[rand_samp]);
 					}
-					
-//					myAutomaton.computeGlobalFeatureImportance(globalExpController.getClassChoice());
-//					
-//					globalExpController.setPositive_features(myAutomaton.getPositiveFeatures());
-//					globalExpController.setNegative_features(myAutomaton.getNegativeFeatures());
-				
+									
 					updateProgress(count, n_training_rounds*training_samples); 
 					count++;
 
@@ -1134,8 +1145,6 @@ public class AutomatonMachineController {
 	  learnThread.start();
 	  
 	  computeLocalInterpretabilityMatrix();
-		
-		
     }
     
     @FXML
@@ -1556,7 +1565,7 @@ public class AutomatonMachineController {
 
 		    }
 			
-			l2error = (float) (Math.sqrt(l2error)/nsamps);		
+			l2error = (float) (Math.sqrt(l2error/nsamps));		
 			System.out.println("l2 Error: " + l2error);   
 			
 			double[] perf = new double[] {l2error};
@@ -1711,7 +1720,7 @@ public class AutomatonMachineController {
 
 		
 		localExpScene = new Scene(root);
-		localExpScene.getStylesheets().add("css/WhiteOnBlack.css");
+		localExpScene.getStylesheets().add("css/light.css");
 		localExpWindow = new Stage();
 		localExpWindow.setScene(localExpScene);
 		localExpWindow.setX(primaryStage.getX() + 250);
@@ -1738,7 +1747,7 @@ public class AutomatonMachineController {
 
 		
 		globalExpScene = new Scene(root);
-		globalExpScene.getStylesheets().add("css/WhiteOnBlack.css");
+		globalExpScene.getStylesheets().add("css/light.css");
 		globalExpWindow = new Stage();
 		globalExpWindow.setScene(globalExpScene);
 		globalExpWindow.setX(primaryStage.getX() + 250);
@@ -1764,7 +1773,7 @@ public class AutomatonMachineController {
 
 		
 		rangeExpScene = new Scene(root);
-		rangeExpScene.getStylesheets().add("css/WhiteOnBlack.css");
+		rangeExpScene.getStylesheets().add("css/light.css");
 		rangeExpWindow = new Stage();
 		rangeExpWindow.setScene(rangeExpScene);
 		rangeExpWindow.setX(primaryStage.getX() + 250);
@@ -1790,7 +1799,7 @@ public class AutomatonMachineController {
 
 		
 		dataInputScene = new Scene(root);
-		dataInputScene.getStylesheets().add("css/WhiteOnBlack.css");
+		dataInputScene.getStylesheets().add("css/light.css");
 		dataInputWindow = new Stage();
 		dataInputWindow.setScene(dataInputScene);
 		dataInputWindow.setX(primaryStage.getX() + 250);
@@ -1816,7 +1825,7 @@ public class AutomatonMachineController {
 
 		
 		tsneScene = new Scene(root);
-		tsneScene.getStylesheets().add("css/WhiteOnBlack.css");
+		tsneScene.getStylesheets().add("css/light.css");
 		tsneWindow = new Stage();
 		tsneWindow.setScene(tsneScene);
 		tsneWindow.setX(primaryStage.getX() + 250);
@@ -1841,7 +1850,7 @@ public class AutomatonMachineController {
 
 		
 		contrastiveScene = new Scene(root);
-		contrastiveScene.getStylesheets().add("css/WhiteOnBlack.css");
+		contrastiveScene.getStylesheets().add("css/light.css");
 		contrastiveWindow = new Stage();
 		contrastiveWindow.setScene(contrastiveScene);
 		contrastiveWindow.setX(primaryStage.getX() + 250);
@@ -1855,8 +1864,32 @@ public class AutomatonMachineController {
 		
 		contrastiveController.initializeContrastive();
 		contrastiveController.setStage(primaryStage);
-		
 	}
+    
+    public void setInterpretClusterController() throws IOException, ParseException {
+		
+		FXMLLoader loader = new FXMLLoader(getClass().getResource("interpretableClusteringController.fxml"));
+		Parent root = (Parent)loader.load();
+		interClusterController = loader.getController();
+
+		
+		interpretClusterScene = new Scene(root);
+		interpretClusterScene.getStylesheets().add("css/light.css");
+		interpretClusterWindow = new Stage();
+		interpretClusterWindow.setScene(interpretClusterScene);
+		interpretClusterWindow.setX(primaryStage.getX() + 250);
+		interpretClusterWindow.setY(primaryStage.getY() + 100);
+		
+		interpretClusterWindow.setOnCloseRequest(new EventHandler<WindowEvent>() {
+            public void handle(WindowEvent we) {
+            	interpretClusterCheckbox.setSelected(false);
+            }
+        });
+		
+		interClusterController.initializeContrastive();
+		interClusterController.setStage(primaryStage);
+	}
+    
     
     public void setSyntheticController() throws IOException, ParseException {
 		
@@ -1866,7 +1899,7 @@ public class AutomatonMachineController {
 
 		
 		syntheticScene = new Scene(root);
-		syntheticScene.getStylesheets().add("css/WhiteOnBlack.css");
+		syntheticScene.getStylesheets().add("css/light.css");
 		syntheticWindow = new Stage();
 		syntheticWindow.setScene(syntheticScene);
 		syntheticWindow.setX(primaryStage.getX() + 250);
@@ -1891,7 +1924,7 @@ public class AutomatonMachineController {
 		hiddenStateController = loader.getController();
 		
 		hiddenStateScene = new Scene(root);
-		hiddenStateScene.getStylesheets().add("css/WhiteOnBlack.css");
+		hiddenStateScene.getStylesheets().add("css/light.css");
 		
 		hiddenStateWindow = new Stage();
 		hiddenStateWindow.setScene(hiddenStateScene);
@@ -1980,6 +2013,18 @@ public class AutomatonMachineController {
 		}	   	
     }
     
+    @FXML
+    void handleInterpretClusterCheckbox(ActionEvent event) {
+
+    	if(interpretClusterCheckbox.isSelected()) {
+    		interpretClusterWindow.show();
+		}
+		else {
+			interpretClusterWindow.close();
+		}	   	
+    }
+    
+    
 	public void setStage(Stage primaryStage) {
 		this.primaryStage = primaryStage;
 	}
@@ -2017,6 +2062,9 @@ public class AutomatonMachineController {
 		return myAutomaton.getMaxRange();
 	}
 	
+	public boolean isRegression() {
+		return regression;
+	}
 	
 	public void create3DTsneChart(double[][] data, double[] mins, double[] maxs, Color[] colors) {
 		
@@ -2137,7 +2185,15 @@ public class AutomatonMachineController {
 	    sc.setAnimated(false);
 	    sc.setLegendVisible(false);
 	    
-	    
+	    double[] mins = new double[3];
+	    double[] maxs = new double[3];
+		
+		for(int i = 0; i < 3; i++) {
+			mins[i] = Double.MAX_VALUE;
+			maxs[i] = -Double.MAX_VALUE;
+		}
+		
+    
 	    int rand_samp;
 	    contrastive_data = data.clone();
 	    int n_samples = contrastive_data.length;
@@ -2158,6 +2214,16 @@ public class AutomatonMachineController {
 	    		rand_samp = training_sample_list.get(training_samples + rng.nextInt(test_samples));		
 	    		test_contrastive[i - training_samples] = data[rand_samp];
 	    	}
+	    	
+            for(int j = 0; j < 3; j++) {
+				
+				if(data[i][j] > maxs[j]) {
+					maxs[j] = data[i][j];
+				}
+				else if(data[i][j] < mins[j]) {
+					mins[j] = data[i][j];
+				}
+			}	
 	    }
 	    
 	    
@@ -2211,7 +2277,7 @@ public class AutomatonMachineController {
 	    }
 		
 	    
-	    create3DTsneChart(train_contrastive, contrastiveController.getMins(), contrastiveController.getMaxs(), tsneColors);
+	    create3DTsneChart(train_contrastive, mins, maxs, tsneColors);
 	    show3DTsne();
 	    
 		return sc;
@@ -2510,6 +2576,29 @@ public class AutomatonMachineController {
 	public void setRangeClass(int myClassOutput) {		
 		System.out.println("Myclass: " + myClassOutput);
 		myAutomaton.computeGlobalFeatureImportance(myClassOutput);		
+	}
+
+	public void setRangeClassRegression(int target, int top) {
+		myAutomaton.computeRegressionImportantRanges(target, top);
+	}
+
+	public int getThreshold() {
+		return myAutomaton.getThreshold();
+	}
+
+
+	/**
+	 * Gets the number of targets learning on
+	 * For regression this is the threshold
+	 * For multiclass this the number of classes
+	 * @return
+	 */
+	public int getNumberTargets() {
+		
+		if(regression) {
+			return getThreshold();
+		}	
+		return nClasses;
 	}
     
 }

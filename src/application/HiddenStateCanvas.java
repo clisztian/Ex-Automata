@@ -136,7 +136,8 @@ public class HiddenStateCanvas { //implements Runnable {
 		for (int i = 0; i < hidden.length; i++) {
         	
 	           
-        	double[] vals = hidden[i];            
+        	double[] vals = hidden[i];    
+        	       	
             Sphere sphere = new Sphere(5f); 
 
             // color

@@ -15,7 +15,7 @@ public class InterpretableRangeController {
 	private AutomatonMachineController myAutomaton;
 	private InterpretableRangeChart interpretChart;
 	private String[] feature_names;
-	private String[] class_names;
+
 	
 	int myClassOutput;
 	
@@ -48,19 +48,35 @@ public class InterpretableRangeController {
 	}
 	
 
+    public void setOutputSliderMax(int max) {
+    	outputSlider.setMax(max);
+    }
+    
+    
 	@FXML
 	void handleOutputClassChanged() {
 
-		 myClassOutput = (int)outputSlider.getValue();
-		 
-		 modelchoice  = (int)(class_names.length*(myClassOutput/outputSlider.getMax()));
-		 
-		 modelOutputText.setText("" + modelchoice);
-		 
-		 if(myAutomaton != null && modelchoice < class_names.length) {
-			 myAutomaton.setRangeClass(modelchoice);	 
-			 interpretChart.updateChart(myAutomaton.getRanges());
-		 } 
+		 myClassOutput = (int)outputSlider.getValue(); 
+		 modelchoice = myClassOutput;
+		 if(!myAutomaton.isRegression()) {
+			 
+			 modelchoice  = (int)(myAutomaton.getNumberTargets()*(myClassOutput/outputSlider.getMax()));			 
+			 modelOutputText.setText("" + modelchoice);			 
+			 if(myAutomaton != null && modelchoice < myAutomaton.getNumberTargets()) {
+				 myAutomaton.setRangeClass(modelchoice);	 
+				 interpretChart.updateChart(myAutomaton.getRanges());
+			 } 
+		 }
+		 else {
+			 
+			 modelOutputText.setText("" + modelchoice);			 
+			 if(myAutomaton != null && modelchoice < myAutomaton.getThreshold()) {
+				 myAutomaton.setRangeClassRegression(modelchoice,(int)((topClauseSlider.getValue()/100.0)*myAutomaton.getThreshold()));	 
+				 interpretChart.updateChart(myAutomaton.getRanges());
+			 } 
+			 
+		 }
+		
 	}
 
 	public void setStage(Stage primaryStage) {
@@ -90,7 +106,7 @@ public class InterpretableRangeController {
 
 	public void updateChart(double top) {
 		
-		if(myAutomaton != null && modelchoice < class_names.length) {
+		if(myAutomaton != null && modelchoice < myAutomaton.getNumberTargets()) {
 		  
 			myAutomaton.computeFeatureImportance(modelchoice, top);
 		    interpretChart.updateChart(myAutomaton.getRanges());
@@ -104,10 +120,6 @@ public class InterpretableRangeController {
 
 	public void setAutomaton(AutomatonMachineController automatonMachineController) {
 		this.myAutomaton = automatonMachineController;
-	}
-
-	public void setClassNames(String[] classNames) {
-		this.class_names = classNames;
 	}
 	 
 	
